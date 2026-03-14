@@ -1,10 +1,18 @@
+from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+
+# Load backend/.env before service modules read environment variables.
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
+
 from services.vertex_ai import vertex_service
 from services.firebase import firebase_service
+from reasoning.router import router as reasoning_router
 
 app = FastAPI(title="ECO-PULSE API", description="AI-powered Urban Heat Mitigation Planner")
+app.include_router(reasoning_router)
 
 class BlueprintRequest(BaseModel):
     latitude: float
