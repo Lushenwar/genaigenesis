@@ -28,7 +28,8 @@ Database: Firebase Firestore (NoSQL).
 
 AI/ML: Google Cloud Vertex AI (Gemini 1.5 Pro, Imagen 3).
 
-Deployment: Vercel (Frontend), Google Cloud Run (Backend via Docker).
+Deployment: Localhost (Hackathon Development Mode).
+
 
 Data Source: Static Toronto Public Health GeoJSON (Pre-processed to prevent UI lag).
 
@@ -80,36 +81,38 @@ Prompt Strategy: Image-to-Image / Inpainting. Takes a base Google Street View or
 
 Output: Generates a modified image overlaying realistic trees and green roofs onto the existing concrete geometry.
 
-4. Role-Specific Directives for the AI Coding Agent
-When generating code for this project, the AI coding agent must adhere to these exact subsystem responsibilities:
+4. Hackathon Team Roles & Remaining Tasks
+As we transition from "Friday Night Setup" to "Saturday Execution," the remaining tasks are split between the following roles:
 
-🗺️ For Frontend Code Generation
-Goal: Jaw-dropping, dark-mode 3D map.
+🗺️ **Role 1: The Geospatial Frontend Lead (Map & UI)**
+- **Remaining Task 1**: Enable Photorealistic 3D Buildings via Google Map Tiles API (Map3DElement integration).
+- **Remaining Task 2**: Polish UI aesthetics to "WOW" level—implement glassmorphism on the dashboard, refined CSS transitions, and high-contrast dark-mode highlights.
+- **Remaining Task 3**: Finalize the Before/After slider UI with real high-resolution asset loading.
 
-Directives: Only use @vis.gl/react-google-maps. Do not import mapbox-gl. Ensure the Map component loads the google.maps.Map3DElement or relevant 3D tiles layer. The UI must look like an enterprise GovTech dashboard (sleek, high-contrast, professional).
+🧠 **Role 2: The Vertex AI Engineer (Prompting & Generation)**
+- **Remaining Task 1**: Fine-tune Gemini 1.5 Pro system prompts to ensure technical, mathematical precision in cost and temperature drop estimations.
+- **Remaining Task 2**: Implement real inpainting/image-to-image logic with Imagen 3 (Satellite view to Green-space visual).
+- **Remaining Task 3**: Set up GCS buckets for serving AI-generated image assets with proper public/private accessibility.
 
-🧠 For Vertex AI Code Generation
-Goal: Stable, structured JSON outputs and high-quality inpainted images.
+⚙️ **Role 3: The Cloud Backend Architect (APIs & Infrastructure)**
+- **Remaining Task 1**: Finalize environment variables configuration (API Keys, GCP Auth) for local testing.
+- **Remaining Task 2**: Implement Firebase security rules and verify Firestore session persistence.
+- **Remaining Task 3**: Optimize API orchestration latency to ensure the "loading" states are snappy for the demo video.
 
-Directives: Use the official google-cloud-aiplatform Python SDK. When writing the Gemini 1.5 Pro prompt, enforce JSON output using response_mime_type="application/json". The prompt must instruct the AI to be highly specific and mathematical in its cost and temperature estimations, avoiding generic advice.
 
-⚙️ For FastAPI / Cloud Backend Code Generation
-Goal: Fast, stateless API orchestration that deploys easily to Google Cloud Run.
-
-Directives: Keep the FastAPI structure simple (main.py, routes/, services/vertex_ai.py). Provide the Dockerfile required to containerize this FastAPI app for Cloud Run. Integrate firebase-admin using Application Default Credentials (ADC) for seamless Google Cloud authentication.
-
-🎬 For Data Integration (The Hackathon "Cheat Code")
-Goal: Zero latency and crash-proof demos.
-
-Directives: DO NOT write code that attempts to calculate live thermal physics or stream massive raster files from Earth Engine on the fly. The application MUST load the heat map data from a localized, pre-simplified toronto_heat.geojson file in the Next.js public/ directory. 
+🎬 **Role 4: The Data & Product Manager (The Hackathon Closer)**
+- **Remaining Task 1**: Acquire and clean official Toronto Public Health GeoJSON heat data to replace the current placeholder.
+- **Remaining Task 2**: Script and produce the 2-minute demo video, highlighting all Google API touchpoints (Vertex, Firebase, Maps).
+- **Remaining Task 3**: Finalize the Devpost submission narrative, focusing on the "Problem/Solution" impact.
+ 
 5. Project Directory Structure
 ```text
 genaigenesis/
 ├── backend/                # FastAPI Backend
 │   ├── main.py             # Entry point & API routes
 │   ├── requirements.txt    # Python dependencies
-│   ├── Dockerfile          # Containerization for Cloud Run
 │   ├── routes/             # API route modules
+
 │   └── services/           # Vertex AI & Firebase logic
 ├── frontend/               # Next.js Frontend
 │   ├── src/

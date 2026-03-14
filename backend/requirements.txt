@@ -5,3 +5,7 @@ google-cloud-aiplatform
 firebase-admin
 python-multipart
 python-dotenv
+pandas
+numpy
+scikit-learn
+
