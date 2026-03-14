@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preview - Plantation Priorities (No Buildings)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #111; }
+    #map { width: 100vw; height: 100vh; }
+    #overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.8); color: #fff; font-size: 1.2rem;
+      flex-direction: column; gap: 16px;
+    }
+    #overlay.hidden { display: none; }
+    .pick-btn {
+      padding: 12px 28px; background: #2196f3; border: none;
+      border-radius: 8px; color: #fff; font-size: 1rem; cursor: pointer;
+    }
+    .pick-btn:hover { background: #1976d2; }
+    .stats {
+      position: fixed; top: 12px; left: 12px; z-index: 1000;
+      background: rgba(0,0,0,0.8); color: #fff; padding: 12px 16px;
+      border-radius: 8px; font-size: 0.85rem; line-height: 1.6;
+    }
+    .legend {
+      background: rgba(0,0,0,0.8); padding: 12px 16px; border-radius: 8px;
+      color: #fff; line-height: 1.8; font-size: 0.85rem;
+    }
+    .legend i {
+      display: inline-block; width: 14px; height: 14px;
+      margin-right: 6px; vertical-align: middle; border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <div style="text-align:center; max-width:420px;">
+      <h2 style="margin-bottom:8px;">Plantation Priorities (Buildings Removed)</h2>
+      <p style="color:#aaa; margin-bottom:20px; font-size:0.9rem;">
+        Select the GeoJSON file to preview on the map.
+      </p>
+      <label class="pick-btn">
+        Choose GeoJSON file
+        <input type="file" id="fileinput" accept=".geojson,.json" style="display:none;" />
+      </label>
+    </div>
+  </div>
+  <div id="stats" class="stats" style="display:none;"></div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const COLORS = {
+      1: '#d32f2f',
+      2: '#f57c00',
+      3: '#fbc02d',
+      4: '#66bb6a',
+      5: '#2196f3',
+    };
+
+    const map = L.map('map').setView([45.55, -73.65], 11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      maxZoom: 19,
+    }).addTo(map);
+
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'legend');
+      div.innerHTML = '<strong>Priority</strong><br/>';
+      [
+        [1, 'Priorite 1 (Highest)'],
+        [2, 'Priorite 2'],
+        [3, 'Priorite 3'],
+        [4, 'Priorite 4'],
+        [5, 'Priorite 5 (Lowest)'],
+      ].forEach(([v, t]) => {
+        div.innerHTML += `<div><i style="background:${COLORS[v]}"></i>${t}</div>`;
+      });
+      return div;
+    };
+    legend.addTo(map);
+
+    function render(data) {
+      const overlay = document.getElementById('overlay');
+      overlay.textContent = 'Rendering ' + data.features.length + ' features...';
+
+      setTimeout(() => {
+        const layer = L.geoJSON(data, {
+          style: f => ({
+            fillColor: COLORS[f.properties.Priorite_I] || '#9e9e9e',
+            fillOpacity: 0.7,
+            color: '#000',
+            weight: 0.2,
+          }),
+          onEachFeature: (f, lyr) => {
+            const p = f.properties;
+            lyr.bindPopup(
+              `<strong>${p.NOM_OFFICI || 'N/A'}</strong><br/>` +
+              `${p.Legende || 'Priority ' + p.Priorite_I}<br/>` +
+              `Area: ${p.Shape_Area?.toFixed(1) || '?'} m&sup2;`
+            );
+          },
+        }).addTo(map);
+
+        map.fitBounds(layer.getBounds());
+
+        const stats = document.getElementById('stats');
+        stats.style.display = 'block';
+        stats.innerHTML =
+          `<strong>Features:</strong> ${data.features.length.toLocaleString()}<br/>` +
+          `<strong>File:</strong> ${(window._fileName || 'unknown')}`;
+
+        overlay.classList.add('hidden');
+      }, 50);
+    }
+
+    document.getElementById('fileinput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      window._fileName = file.name;
+      const overlay = document.getElementById('overlay');
+      overlay.textContent = 'Parsing ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)...';
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        try {
+          render(JSON.parse(evt.target.result));
+        } catch (err) {
+          overlay.textContent = 'Parse error: ' + err.message;
+        }
+      };
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>
