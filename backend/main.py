@@ -1,6 +1,9 @@
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -11,7 +14,18 @@ from services.vertex_ai import vertex_service
 from services.firebase import firebase_service
 from reasoning.router import router as reasoning_router
 
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
 app = FastAPI(title="ECO-PULSE API", description="AI-powered Urban Heat Mitigation Planner")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 app.include_router(reasoning_router)
 
 class BlueprintRequest(BaseModel):
@@ -30,6 +44,18 @@ class BlueprintResponse(BaseModel):
 @app.get("/")
 async def root():
     return {"message": "Welcome to ECO-PULSE API"}
+
+
+@app.get("/api/v1/plantation-data")
+async def get_plantation_data():
+    geojson_path = DATA_DIR / "plantation_final.geojson"
+    if not geojson_path.exists():
+        raise HTTPException(status_code=404, detail="Plantation data not found")
+    return FileResponse(
+        geojson_path,
+        media_type="application/geo+json",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
 
 @app.post("/api/v1/generate-blueprint", response_model=BlueprintResponse)
 async def generate_blueprint(request: BlueprintRequest):

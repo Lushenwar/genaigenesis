@@ -26,7 +26,7 @@ export default function Home() {
       const response = await fetch("http://localhost:8000/api/v1/generate-blueprint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ latitude: lat, longitude: lng, location_context: "Toronto Urban Zone" }),
+        body: JSON.stringify({ latitude: lat, longitude: lng, location_context: "Montreal Urban Zone" }),
       });
 
       if (!response.ok) throw new Error("Failed to generate blueprint");
