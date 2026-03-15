@@ -3,150 +3,150 @@
     "zone_id": "MTL_ZONE_1",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.6245,
-      "north": 45.6255,
-      "west": -73.6765,
-      "east": -73.6755
+      "south": 45.4405,
+      "north": 45.4415,
+      "west": -73.6735,
+      "east": -73.6725
     },
     "metrics": {
-      "avg_heat_index": 97.0,
-      "avg_population_density": 27491,
-      "avg_canopy_coverage_pct": 0.8
+      "avg_heat_index": 103.0,
+      "avg_population_density": 29243,
+      "avg_canopy_coverage_pct": 3.3
     }
   },
   {
     "zone_id": "MTL_ZONE_2",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.4805,
-      "north": 45.4815,
-      "west": -73.4345,
-      "east": -73.4335
+      "south": 45.4625,
+      "north": 45.4635,
+      "west": -73.6435,
+      "east": -73.6425
     },
     "metrics": {
-      "avg_heat_index": 90.1,
-      "avg_population_density": 29739,
-      "avg_canopy_coverage_pct": 4.4
+      "avg_heat_index": 103.2,
+      "avg_population_density": 28943,
+      "avg_canopy_coverage_pct": 4.6
     }
   },
   {
     "zone_id": "MTL_ZONE_3",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.5785,
-      "north": 45.5795,
-      "west": -73.5505,
-      "east": -73.5495
+      "south": 45.6255,
+      "north": 45.6265,
+      "west": -73.6005,
+      "east": -73.5995
     },
     "metrics": {
-      "avg_heat_index": 93.3,
-      "avg_population_density": 28136,
-      "avg_canopy_coverage_pct": 3.0
+      "avg_heat_index": 101.9,
+      "avg_population_density": 29803,
+      "avg_canopy_coverage_pct": 6.3
     }
   },
   {
     "zone_id": "MTL_ZONE_4",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.6265,
-      "north": 45.6275,
-      "west": -73.6995,
-      "east": -73.6985
+      "south": 45.5835,
+      "north": 45.5845,
+      "west": -73.5805,
+      "east": -73.5795
     },
     "metrics": {
-      "avg_heat_index": 91.4,
-      "avg_population_density": 28289,
-      "avg_canopy_coverage_pct": 1.8
+      "avg_heat_index": 99.0,
+      "avg_population_density": 29115,
+      "avg_canopy_coverage_pct": 2.1
     }
   },
   {
     "zone_id": "MTL_ZONE_5",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.4995,
-      "north": 45.5005,
-      "west": -73.6695,
-      "east": -73.6685
+      "south": 45.5795,
+      "north": 45.5805,
+      "west": -73.6195,
+      "east": -73.6185
     },
     "metrics": {
-      "avg_heat_index": 94.0,
-      "avg_population_density": 29526,
-      "avg_canopy_coverage_pct": 9.0
+      "avg_heat_index": 99.6,
+      "avg_population_density": 28778,
+      "avg_canopy_coverage_pct": 2.3
     }
   },
   {
     "zone_id": "MTL_ZONE_6",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.3745,
-      "north": 45.3755,
-      "west": -73.4195,
-      "east": -73.4185
+      "south": 45.5685,
+      "north": 45.5695,
+      "west": -73.6325,
+      "east": -73.6315
     },
     "metrics": {
-      "avg_heat_index": 93.2,
-      "avg_population_density": 27951,
-      "avg_canopy_coverage_pct": 3.0
+      "avg_heat_index": 98.4,
+      "avg_population_density": 29715,
+      "avg_canopy_coverage_pct": 4.4
     }
   },
   {
     "zone_id": "MTL_ZONE_7",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.5785,
-      "north": 45.5795,
-      "west": -73.5205,
-      "east": -73.5195
+      "south": 45.4585,
+      "north": 45.4595,
+      "west": -73.5665,
+      "east": -73.5655
     },
     "metrics": {
-      "avg_heat_index": 99.5,
-      "avg_population_density": 25017,
-      "avg_canopy_coverage_pct": 0.9
+      "avg_heat_index": 98.9,
+      "avg_population_density": 29960,
+      "avg_canopy_coverage_pct": 5.7
     }
   },
   {
     "zone_id": "MTL_ZONE_8",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.4635,
-      "north": 45.4645,
-      "west": -73.6655,
-      "east": -73.6645
+      "south": 45.5795,
+      "north": 45.5805,
+      "west": -73.5685,
+      "east": -73.5675
     },
     "metrics": {
-      "avg_heat_index": 96.7,
-      "avg_population_density": 25842,
-      "avg_canopy_coverage_pct": 1.9
+      "avg_heat_index": 100.0,
+      "avg_population_density": 28456,
+      "avg_canopy_coverage_pct": 2.4
     }
   },
   {
     "zone_id": "MTL_ZONE_9",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.4195,
-      "north": 45.4205,
-      "west": -73.4655,
-      "east": -73.4645
+      "south": 45.6255,
+      "north": 45.6265,
+      "west": -73.6205,
+      "east": -73.6195
     },
     "metrics": {
-      "avg_heat_index": 92.8,
-      "avg_population_density": 29361,
-      "avg_canopy_coverage_pct": 12.4
+      "avg_heat_index": 102.8,
+      "avg_population_density": 29986,
+      "avg_canopy_coverage_pct": 10.0
     }
   },
   {
     "zone_id": "MTL_ZONE_10",
     "ml_risk_cluster": "Critical",
     "bounds": {
-      "south": 45.4865,
-      "north": 45.4875,
-      "west": -73.5495,
-      "east": -73.5485
+      "south": 45.5205,
+      "north": 45.5215,
+      "west": -73.7195,
+      "east": -73.7185
     },
     "metrics": {
-      "avg_heat_index": 86.9,
-      "avg_population_density": 29968,
-      "avg_canopy_coverage_pct": 8.5
+      "avg_heat_index": 95.8,
+      "avg_population_density": 29844,
+      "avg_canopy_coverage_pct": 3.0
     }
   }
 ]

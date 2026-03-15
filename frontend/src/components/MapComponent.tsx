@@ -14,8 +14,16 @@ const PRIORITY_COLORS: Record<number, string> = {
   5: "#2196f3",
 };
 
+export interface ZoneBounds {
+  south: number;
+  north: number;
+  west: number;
+  east: number;
+}
+
 interface MapViewProps {
   onLocationSelect: (lat: number, lng: number) => void;
+  selectedBounds?: ZoneBounds | null;
 }
 
 function PlantationLayer() {
@@ -66,7 +74,45 @@ function PlantationLayer() {
   return null;
 }
 
-export default function MapView({ onLocationSelect }: MapViewProps) {
+function ZoneHighlight({ bounds }: { bounds: ZoneBounds }) {
+  const map = useMap();
+  const rectRef = useRef<google.maps.Rectangle | null>(null);
+
+  useEffect(() => {
+    if (!map) return;
+
+    const gBounds = new google.maps.LatLngBounds(
+      { lat: bounds.south, lng: bounds.west },
+      { lat: bounds.north, lng: bounds.east }
+    );
+
+    if (rectRef.current) {
+      rectRef.current.setBounds(gBounds);
+    } else {
+      rectRef.current = new google.maps.Rectangle({
+        bounds: gBounds,
+        map,
+        strokeColor: "#ef4444",
+        strokeOpacity: 0.9,
+        strokeWeight: 2,
+        fillColor: "#ef4444",
+        fillOpacity: 0.08,
+        clickable: false,
+      });
+    }
+
+    map.fitBounds(gBounds, { top: 40, bottom: 40, left: 40, right: 40 });
+
+    return () => {
+      rectRef.current?.setMap(null);
+      rectRef.current = null;
+    };
+  }, [map, bounds]);
+
+  return null;
+}
+
+export default function MapView({ onLocationSelect, selectedBounds }: MapViewProps) {
   const [mapLoading, setMapLoading] = useState(true);
 
   useEffect(() => {
@@ -89,6 +135,7 @@ export default function MapView({ onLocationSelect }: MapViewProps) {
           onTilesLoaded={handleTilesLoaded}
         >
           <PlantationLayer />
+          {selectedBounds && <ZoneHighlight bounds={selectedBounds} />}
         </Map>
       </APIProvider>
 
@@ -126,4 +173,3 @@ declare global {
     __ON_LOCATION_SELECT?: (lat: number, lng: number) => void;
   }
 }
-
