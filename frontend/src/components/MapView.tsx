@@ -20,6 +20,11 @@ const HEAT_COLORS: Record<number, string> = {
 const DEFAULT_CENTER = { lat: 45.55, lng: -73.65 };
 const DEFAULT_ZOOM = 11;
 
+interface GeoJsonFeatureCollection {
+  type?: string;
+  features?: unknown[];
+}
+
 /** Bounds shape used by the map and backend zones */
 export interface ZoneBounds {
   south: number;
