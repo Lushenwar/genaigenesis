@@ -2,20 +2,20 @@
   {
     "zone_id": "MTL_ZONE_1",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Mercier–Hochelaga-Maisonneuve",
+    "neighborhood": "Saint-Laurent",
     "center": {
-      "lat": 45.55428,
-      "lng": -73.525313
+      "lat": 45.496022,
+      "lng": -73.703225
     },
     "bounds": {
-      "south": 45.553831,
-      "north": 45.554729,
-      "west": -73.525954,
-      "east": -73.524672
+      "south": 45.493736,
+      "north": 45.498308,
+      "west": -73.706475,
+      "east": -73.699974
     },
     "metrics": {
-      "priority_1_cell_count": 17,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 25,
+      "area_sq_m": 250000
     }
   },
   {
@@ -23,170 +23,170 @@
     "ml_risk_cluster": "Critical",
     "neighborhood": "Rivière-des-Prairies–Pointe-aux-Trembles",
     "center": {
-      "lat": 45.624348,
-      "lng": -73.615066
+      "lat": 45.655812,
+      "lng": -73.519848
     },
     "bounds": {
-      "south": 45.623899,
-      "north": 45.624798,
-      "west": -73.615708,
-      "east": -73.614425
+      "south": 45.653521,
+      "north": 45.658103,
+      "west": -73.523115,
+      "east": -73.516581
     },
     "metrics": {
-      "priority_1_cell_count": 16,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 17,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_3",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Mercier–Hochelaga-Maisonneuve",
+    "neighborhood": "Pierrefonds-Roxboro",
     "center": {
-      "lat": 45.538111,
-      "lng": -73.547111
+      "lat": 45.501299,
+      "lng": -73.773504
     },
     "bounds": {
-      "south": 45.537661,
-      "north": 45.53856,
-      "west": -73.547752,
-      "east": -73.546469
+      "south": 45.499015,
+      "north": 45.503583,
+      "west": -73.776752,
+      "east": -73.770256
     },
     "metrics": {
-      "priority_1_cell_count": 16,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 12,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_4",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Ahuntsic-Cartierville",
+    "neighborhood": "Rivière-des-Prairies–Pointe-aux-Trembles",
     "center": {
-      "lat": 45.545297,
-      "lng": -73.648403
+      "lat": 45.655978,
+      "lng": -73.532679
     },
     "bounds": {
-      "south": 45.544848,
-      "north": 45.545746,
-      "west": -73.649044,
-      "east": -73.647762
+      "south": 45.653687,
+      "north": 45.658268,
+      "west": -73.535945,
+      "east": -73.529412
     },
     "metrics": {
-      "priority_1_cell_count": 16,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 8,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_5",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Lachine",
+    "neighborhood": "Rivière-des-Prairies–Pointe-aux-Trembles",
     "center": {
-      "lat": 45.444686,
-      "lng": -73.679176
+      "lat": 45.651396,
+      "lng": -73.526381
     },
     "bounds": {
-      "south": 45.444237,
-      "north": 45.445135,
-      "west": -73.679817,
-      "east": -73.678535
+      "south": 45.649105,
+      "north": 45.653687,
+      "west": -73.529648,
+      "east": -73.523115
     },
     "metrics": {
-      "priority_1_cell_count": 16,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 6,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_6",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Montréal-Nord",
+    "neighborhood": "Saint-Laurent",
     "center": {
-      "lat": 45.625247,
-      "lng": -73.616349
+      "lat": 45.477952,
+      "lng": -73.697242
     },
     "bounds": {
-      "south": 45.624798,
-      "north": 45.625696,
-      "west": -73.61699,
-      "east": -73.615708
+      "south": 45.475665,
+      "north": 45.480238,
+      "west": -73.700492,
+      "east": -73.693992
     },
     "metrics": {
-      "priority_1_cell_count": 15,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 6,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_7",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Saint-Laurent",
+    "neighborhood": "Mercier–Hochelaga-Maisonneuve",
     "center": {
-      "lat": 45.517449,
-      "lng": -73.6702
+      "lat": 45.58841,
+      "lng": -73.528031
     },
     "bounds": {
-      "south": 45.517,
-      "north": 45.517899,
-      "west": -73.670842,
-      "east": -73.669559
+      "south": 45.586119,
+      "north": 45.590701,
+      "west": -73.531293,
+      "east": -73.524768
     },
     "metrics": {
-      "priority_1_cell_count": 15,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 3,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_8",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "LaSalle",
+    "neighborhood": "Rivière-des-Prairies–Pointe-aux-Trembles",
     "center": {
-      "lat": 45.427618,
-      "lng": -73.616349
+      "lat": 45.637396,
+      "lng": -73.488255
     },
     "bounds": {
-      "south": 45.427169,
-      "north": 45.428067,
-      "west": -73.61699,
-      "east": -73.615708
+      "south": 45.635104,
+      "north": 45.639688,
+      "west": -73.491522,
+      "east": -73.484988
     },
     "metrics": {
-      "priority_1_cell_count": 15,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 3,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_9",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Lachine",
+    "neighborhood": "Montréal-Nord",
     "center": {
-      "lat": 45.443788,
-      "lng": -73.679176
+      "lat": 45.603106,
+      "lng": -73.62382
     },
     "bounds": {
-      "south": 45.443339,
-      "north": 45.444237,
-      "west": -73.679817,
-      "east": -73.678535
+      "south": 45.600818,
+      "north": 45.605394,
+      "west": -73.62708,
+      "east": -73.62056
     },
     "metrics": {
-      "priority_1_cell_count": 15,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 3,
+      "area_sq_m": 250000
     }
   },
   {
     "zone_id": "MTL_ZONE_10",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "LaSalle",
+    "neighborhood": "Verdun",
     "center": {
-      "lat": 45.427618,
-      "lng": -73.617631
+      "lat": 45.4626,
+      "lng": -73.5441
     },
     "bounds": {
-      "south": 45.427169,
-      "north": 45.428067,
-      "west": -73.618272,
-      "east": -73.61699
+      "south": 45.46031,
+      "north": 45.464891,
+      "west": -73.547355,
+      "east": -73.540845
     },
     "metrics": {
-      "priority_1_cell_count": 15,
-      "area_sq_m": 10000
+      "priority_1_cell_count": 3,
+      "area_sq_m": 250000
     }
   }
 ]

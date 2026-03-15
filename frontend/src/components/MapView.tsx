@@ -82,7 +82,10 @@ function PlantationDataLayer() {
   return null;
 }
 
-/** Fits the map to the selected zone bounds when they change. */
+/** Minimum zoom when a zone is selected so the area is clearly visible (e.g. 500×500 m). */
+const ZONE_MIN_ZOOM = 17;
+
+/** Fits the map to the selected zone bounds when they change and zooms in so the zone is clearly visible. */
 function FitBounds({ selectedBounds }: { selectedBounds?: ZoneBounds | null }) {
   const map = useMap();
 
@@ -92,7 +95,18 @@ function FitBounds({ selectedBounds }: { selectedBounds?: ZoneBounds | null }) {
       { lat: selectedBounds.south, lng: selectedBounds.west },
       { lat: selectedBounds.north, lng: selectedBounds.east }
     );
-    map.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
+    const padding = { top: 24, right: 24, bottom: 24, left: 24 };
+    map.fitBounds(bounds, padding);
+    const listener = google.maps.event.addListener(map, "idle", function once() {
+      google.maps.event.removeListener(listener);
+      const zoom = map.getZoom();
+      if (typeof zoom === "number" && zoom < ZONE_MIN_ZOOM) {
+        map.setZoom(ZONE_MIN_ZOOM);
+      }
+    });
+    return () => {
+      google.maps.event.removeListener(listener);
+    };
   }, [map, selectedBounds]);
 
   return null;
