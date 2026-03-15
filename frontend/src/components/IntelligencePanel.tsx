@@ -3,6 +3,20 @@ import { Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap } f
 import { getTop10Zones, type Top10Zone } from "@/lib/api";
 import type { AnalyzeZoneResult } from "@/lib/api";
 
+import { ChevronRight, FileJson, Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap } from "lucide-react";
+import { InterventionCard } from "./InterventionCard";
+import { getTop10Zones, type Top10Zone } from "@/lib/api";
+import type { AnalyzeZoneResult } from "@/lib/api";
+
+// Tree canopy only — ROI 6–15% (30-yr), Shade 0.70–0.85, ETI 0.60–0.75, Albedo 0.05–0.10, cost $6k–$15k
+const interventions = [
+  { refId: "TC-01", coords: "43.6532, -79.3832", type: "Tree Canopy", coolingCap: "0.74", roi: "8%", shade: "0.72", evapotranspiration: "0.62", albedo: "0.06", cost: "$7,500", confidence: 88 },
+  { refId: "TC-02", coords: "43.6611, -79.3950", type: "Tree Canopy", coolingCap: "0.79", roi: "11%", shade: "0.78", evapotranspiration: "0.68", albedo: "0.08", cost: "$10,200", confidence: 86 },
+  { refId: "TC-03", coords: "43.6445, -79.4010", type: "Tree Canopy", coolingCap: "0.83", roi: "14%", shade: "0.84", evapotranspiration: "0.73", albedo: "0.09", cost: "$13,000", confidence: 90 },
+];
+
+const tabs = ["Recommendations", "Top 10", "Dashboard"];
+
 function ZoneDetailView({
   zoneLabel,
   onBack,
@@ -248,6 +262,8 @@ export function IntelligencePanel({
   onZoneSelect = () => {},
   onZoneBack = () => {},
 }: IntelligencePanelProps = {}) {
+  const [activeTab, setActiveTab] = useState("Recommendations");
+
   return (
     <div className="h-full min-h-0 flex flex-col border-l border-border bg-background">
       <div className="px-4 py-2.5 border-b border-border">
@@ -261,6 +277,51 @@ export function IntelligencePanel({
         analysisError={analysisError}
         onBack={onZoneBack}
       />
+
+      {activeTab === "Top 10" ? (
+        <>
+          <div className="px-4 py-2.5 border-b border-border">
+            <span className="text-sm font-medium text-foreground">Highest-vulnerability zones</span>
+          </div>
+          <Top10TabContent
+            onZoneSelect={onZoneSelect}
+            selectedZone={selectedZone}
+            analysis={analysis}
+            analyzing={analyzing}
+            analysisError={analysisError}
+            onBack={onZoneBack}
+          />
+        </>
+      ) : (
+        <>
+          {/* Config header */}
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Intervention Blueprint</span>
+            <div className="flex items-center gap-1.5">
+              <FileJson className="w-3.5 h-3.5 text-primary" strokeWidth={1.5} />
+              <span className="font-mono text-[11px] text-primary">blueprint_2026.json</span>
+            </div>
+          </div>
+
+          {/* Pipeline */}
+          <div className="px-4 py-2.5 border-b border-border flex items-center gap-1 overflow-x-auto">
+            {["Spatial Data", "Risk Model", "AI Blueprint", "Viz"].map((stage, i) => (
+              <div key={stage} className="flex items-center gap-1 shrink-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                <span className="text-[10px] text-muted-foreground">{stage}</span>
+                {i < 3 && <ChevronRight className="w-3 h-3 text-border" strokeWidth={1.5} />}
+              </div>
+            ))}
+          </div>
+
+          {/* Cards */}
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
+            {interventions.map(intervention => (
+              <InterventionCard key={intervention.refId} {...intervention} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

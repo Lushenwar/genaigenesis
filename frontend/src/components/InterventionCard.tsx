@@ -41,7 +41,7 @@ export function InterventionCard({
         </div>
         <div>
           <p className="text-[10px] text-muted-foreground mb-0.5">Est. ROI</p>
-          <p className="font-mono-data text-base font-medium text-accent">{roi} <span className="text-[10px] text-muted-foreground">Annual</span></p>
+          <p className="font-mono-data text-base font-medium text-accent">{roi} <span className="text-[10px] text-muted-foreground">30-yr</span></p>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export function InterventionCard({
       <div className="grid grid-cols-3 gap-2 mb-3 p-2 rounded-sm bg-secondary">
         {[
           { label: "Shade", value: shade },
-          { label: "Evapotrans.", value: evapotranspiration },
+          { label: "ETI", value: evapotranspiration },
           { label: "Albedo", value: albedo },
         ].map(m => (
           <div key={m.label}>

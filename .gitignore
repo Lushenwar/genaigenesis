@@ -49,3 +49,5 @@ desktop.ini
 /backend/services/__pycache__
 /data_cleaning/batiments_2d_2016_arrondissements
 /data_cleaning/icfu2022_centrespopulation2021_buf2000m_9cl_shp
+/backend/reasoning/__pycache__
+/backend/reasoning/__pycache__
