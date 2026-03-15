@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { ChevronRight, FileJson, Thermometer, Loader2, AlertCircle } from "lucide-react";
 import { InterventionCard } from "./InterventionCard";
-import { ConductrTrace } from "./ConductrTrace";
 import { getTop10Zones, type Top10Zone } from "@/lib/api";
 
+// Tree canopy only — ROI 6–15% (30-yr), Shade 0.70–0.85, ETI 0.60–0.75, Albedo 0.05–0.10, cost $6k–$15k
 const interventions = [
-  { refId: "09-X24", coords: "43.6532, -79.3832", type: "Green Roof", coolingCap: "0.82", roi: "14.2%", shade: "0.72", evapotranspiration: "0.68", albedo: "0.31", cost: "$1.2M", confidence: 91 },
-  { refId: "11-K07", coords: "43.6611, -79.3950", type: "Tree Canopy", coolingCap: "0.76", roi: "11.8%", shade: "0.84", evapotranspiration: "0.72", albedo: "0.18", cost: "$840K", confidence: 87 },
-  { refId: "15-M12", coords: "43.6445, -79.4010", type: "Cool Pavement", coolingCap: "0.54", roi: "8.3%", shade: "0.12", evapotranspiration: "0.08", albedo: "0.67", cost: "$620K", confidence: 83 },
+  { refId: "TC-01", coords: "43.6532, -79.3832", type: "Tree Canopy", coolingCap: "0.74", roi: "8%", shade: "0.72", evapotranspiration: "0.62", albedo: "0.06", cost: "$7,500", confidence: 88 },
+  { refId: "TC-02", coords: "43.6611, -79.3950", type: "Tree Canopy", coolingCap: "0.79", roi: "11%", shade: "0.78", evapotranspiration: "0.68", albedo: "0.08", cost: "$10,200", confidence: 86 },
+  { refId: "TC-03", coords: "43.6445, -79.4010", type: "Tree Canopy", coolingCap: "0.83", roi: "14%", shade: "0.84", evapotranspiration: "0.73", albedo: "0.09", cost: "$13,000", confidence: 90 },
 ];
 
 const tabs = ["Recommendations", "Top 10", "Dashboard"];
@@ -116,7 +116,6 @@ function Top10TabContent() {
 }
 
 export function IntelligencePanel() {
-  const [traceVisible, setTraceVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("Recommendations");
 
   return (
@@ -172,18 +171,9 @@ export function IntelligencePanel() {
             {interventions.map(intervention => (
               <InterventionCard key={intervention.refId} {...intervention} />
             ))}
-
-            <button
-              onClick={() => setTraceVisible(!traceVisible)}
-              className="w-full py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground border border-border rounded-sm hover:bg-secondary transition-colors"
-            >
-              {traceVisible ? "Hide" : "View"} Conductr Trace
-            </button>
           </div>
         </>
       )}
-
-      <ConductrTrace visible={traceVisible} onClose={() => setTraceVisible(false)} />
     </div>
   );
 }

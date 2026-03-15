@@ -18,6 +18,11 @@ const HEAT_COLORS: Record<number, string> = {
 const DEFAULT_CENTER = { lat: 45.55, lng: -73.65 };
 const DEFAULT_ZOOM = 11;
 
+interface GeoJsonFeatureCollection {
+  type?: string;
+  features?: unknown[];
+}
+
 function PlantationDataLayer() {
   const map = useMap();
   const loaded = useRef(false);
@@ -29,7 +34,7 @@ function PlantationDataLayer() {
     getPlantationData()
       .then((geojson) => {
         if (!geojson || typeof geojson !== "object") return;
-        const data = geojson as GeoJSON.FeatureCollection;
+        const data = geojson as GeoJsonFeatureCollection;
         if (!data.features?.length) return;
 
         map.data.addGeoJson(data);
@@ -68,7 +73,10 @@ function MapOverlayUI() {
     };
     updateCenter();
     const listener = map.addListener("center_changed", updateCenter);
-    return () => google.maps.event.removeListener(listener);
+    return () => {
+      const g = (window as unknown as { google?: { maps: { event: { removeListener: (l: unknown) => void } } } }).google;
+      if (g) g.maps.event.removeListener(listener);
+    };
   }, [map]);
 
   return (
@@ -159,7 +167,6 @@ function MapContent() {
       {mapLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/90 z-10 p-4">
           <p className="text-sm text-muted-foreground animate-pulse">Loading map…</p>
-          <p className="text-xs text-muted-foreground/80">API key is set. If this never finishes, check the browser Console (F12).</p>
         </div>
       )}
       {mapError && (
