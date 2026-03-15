@@ -23,4 +23,8 @@ class ReasoningGeoJsonResponse(BaseModel):
         default=None,
         description="Base64-encoded image with trees overlay (when available).",
     )
+    trace_id: Optional[str] = Field(
+        default=None,
+        description="Run ID for execution trace (Audit & Observability).",
+    )
 

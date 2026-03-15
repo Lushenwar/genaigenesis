@@ -11,15 +11,18 @@ const Index = () => {
   const [analysis, setAnalysis] = useState<AnalyzeZoneResult | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [traceId, setTraceId] = useState<string | null>(null);
 
   const handleZoneSelect = useCallback(async (zone: Top10Zone) => {
     setSelectedZone(zone);
     setAnalysis(null);
     setAnalysisError(null);
+    setTraceId(null);
     setAnalyzing(true);
     try {
       const result = await analyzeZone(zone.zone_id);
       setAnalysis(result);
+      setTraceId(result.trace_id ?? null);
     } catch (err) {
       setAnalysisError(err instanceof Error ? err.message : "Analysis failed.");
     } finally {
@@ -31,6 +34,7 @@ const Index = () => {
     setSelectedZone(null);
     setAnalysis(null);
     setAnalysisError(null);
+    setTraceId(null);
   }, []);
 
   return (
@@ -52,13 +56,13 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main content: min-h-0 lets the grid cell shrink; [&>*]:min-h-0 constrains columns so side panels can scroll */}
+      {/* Main content */}
       <div className="flex-1 min-h-0 grid grid-cols-[200px_1fr_380px] overflow-hidden [&>*]:min-h-0">
         <LayerPanel />
         <div className="min-h-0 flex flex-col overflow-hidden">
           <MapView
             selectedBounds={selectedZone?.bounds ?? null}
-            recommendationLayer={null}
+            recommendationLayer={analysis ?? null}
           />
         </div>
         <IntelligencePanel
@@ -68,6 +72,7 @@ const Index = () => {
           analysisError={analysisError}
           onZoneSelect={handleZoneSelect}
           onZoneBack={handleZoneBack}
+          traceId={traceId}
         />
       </div>
     </div>

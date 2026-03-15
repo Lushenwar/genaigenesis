@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { ChevronRight, FileJson, Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap } from "lucide-react";
+import { ChevronRight, FileJson, Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap, Terminal } from "lucide-react";
 import { InterventionCard } from "./InterventionCard";
+import { ConductrTrace } from "./ConductrTrace";
 import { getTop10Zones, type Top10Zone } from "@/lib/api";
 import type { AnalyzeZoneResult } from "@/lib/api";
 
@@ -19,89 +20,117 @@ function ZoneDetailView({
   analyzing,
   error,
   analysis,
+  traceId,
 }: {
   zoneLabel: string;
   onBack: () => void;
   analyzing: boolean;
   error: string | null;
   analysis: AnalyzeZoneResult | null;
+  traceId: string | null;
 }) {
+  const [traceOpen, setTraceOpen] = useState(!!traceId);
+  useEffect(() => {
+    if (traceId) setTraceOpen(true);
+  }, [traceId]);
   const sites = analysis?.features?.filter((f) => f.properties?.feature_kind === "recommended_planting_site") ?? [];
   const meta = analysis?.metadata;
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto flex flex-col p-3">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground mb-2"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
-        Back to zones
-      </button>
-      <h3 className="text-sm font-semibold text-foreground truncate">{zoneLabel}</h3>
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col p-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground mb-2"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
+          Back to zones
+        </button>
+        <h3 className="text-sm font-semibold text-foreground truncate">{zoneLabel}</h3>
 
-      {analyzing && (
-        <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground text-xs">
-          <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
-          <span>Analyzing zone…</span>
-        </div>
-      )}
-      {error && (
-        <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-[11px] mt-2">
-          {error}
-        </div>
-      )}
-      {analysis && meta && !analyzing && (
-        <div className="space-y-3 mt-2">
-          <div className="px-2 py-1.5 rounded border bg-muted/30 text-[11px] text-muted-foreground">
-            {meta.rationale}
+        {analyzing && (
+          <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground text-xs">
+            <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
+            <span>Analyzing zone…</span>
           </div>
-          {meta.recommended_species?.length > 0 && (
-            <div>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
-                <TreePine className="w-3 h-3" /> Species
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {meta.recommended_species.map((s, i) => (
-                  <span key={i} className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary">
-                    {s}
-                  </span>
-                ))}
+        )}
+        {error && (
+          <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-[11px] mt-2">
+            {error}
+          </div>
+        )}
+        {analysis && meta && !analyzing && (
+          <div className="space-y-3 mt-2">
+            <div className="px-2 py-1.5 rounded border bg-muted/30 text-[11px] text-muted-foreground">
+              {meta.rationale}
+            </div>
+            {meta.recommended_species?.length > 0 && (
+              <div>
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <TreePine className="w-3 h-3" /> Species
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {meta.recommended_species.map((s, i) => (
+                    <span key={i} className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary">
+                      {s}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {sites.length > 0 && (
-            <div>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
-                <MapPin className="w-3 h-3" /> Planting sites ({sites.length})
-              </p>
-              <ul className="space-y-1.5">
-                {sites.slice(0, 5).map((f, i) => (
-                  <li key={i} className="text-[11px] text-foreground/90">
-                    {(f.properties?.label as string) || `Site ${i + 1}`}
-                    {(f.properties?.reason as string) && (
-                      <span className="text-muted-foreground block truncate">{(f.properties.reason as string)}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {meta.quick_wins?.length > 0 && (
-            <div>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
-                <Zap className="w-3 h-3" /> Quick wins
-              </p>
-              <ul className="space-y-0.5 text-[11px] text-muted-foreground">
-                {meta.quick_wins.map((q, i) => (
-                  <li key={i}>+ {q}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+            {sites.length > 0 && (
+              <div>
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <MapPin className="w-3 h-3" /> Planting sites ({sites.length})
+                </p>
+                <ul className="space-y-1.5">
+                  {sites.slice(0, 5).map((f, i) => (
+                    <li key={i} className="text-[11px] text-foreground/90">
+                      {(f.properties?.label as string) || `Site ${i + 1}`}
+                      {(f.properties?.reason as string) && (
+                        <span className="text-muted-foreground block truncate">{(f.properties.reason as string)}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {meta.quick_wins?.length > 0 && (
+              <div>
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <Zap className="w-3 h-3" /> Quick wins
+                </p>
+                <ul className="space-y-0.5 text-[11px] text-muted-foreground">
+                  {meta.quick_wins.map((q, i) => (
+                    <li key={i}>+ {q}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Conductr Trace — under zone analysis */}
+      <div className="shrink-0 border-t border-border bg-muted/30">
+        <button
+          type="button"
+          onClick={() => setTraceOpen((v) => !v)}
+          className="flex items-center gap-2 w-full px-3 py-2 text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          aria-expanded={traceOpen}
+        >
+          <Terminal className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span className="font-medium">
+            Conductr Trace{traceId ? ` (run: ${traceId.slice(0, 8)}…)` : " — execution trace"}
+          </span>
+        </button>
+        <ConductrTrace
+          visible={traceOpen}
+          onClose={() => setTraceOpen(false)}
+          traceId={traceId}
+        />
+      </div>
     </div>
   );
 }
@@ -113,6 +142,7 @@ function Top10TabContent({
   analyzing,
   analysisError,
   onBack,
+  traceId,
 }: {
   onZoneSelect: (zone: Top10Zone) => void;
   selectedZone: Top10Zone | null;
@@ -120,6 +150,7 @@ function Top10TabContent({
   analyzing: boolean;
   analysisError: string | null;
   onBack: () => void;
+  traceId: string | null;
 }) {
   const [zones, setZones] = useState<Top10Zone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,6 +172,7 @@ function Top10TabContent({
         analyzing={analyzing}
         error={analysisError}
         analysis={analysis}
+        traceId={traceId}
       />
     );
   }
@@ -248,6 +280,7 @@ export interface IntelligencePanelProps {
   analysisError?: string | null;
   onZoneSelect?: (zone: Top10Zone) => void;
   onZoneBack?: () => void;
+  traceId?: string | null;
 }
 
 export function IntelligencePanel({
@@ -257,6 +290,7 @@ export function IntelligencePanel({
   analysisError = null,
   onZoneSelect = () => {},
   onZoneBack = () => {},
+  traceId = null,
 }: IntelligencePanelProps = {}) {
   const [activeTab, setActiveTab] = useState("Recommendations");
 
@@ -291,6 +325,7 @@ export function IntelligencePanel({
             analyzing={analyzing}
             analysisError={analysisError}
             onBack={onZoneBack}
+            traceId={traceId}
           />
         </>
       ) : (

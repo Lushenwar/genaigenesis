@@ -14,6 +14,8 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 from services.vertex_ai import vertex_service
 from services.firebase import firebase_service
 from reasoning.router import router as reasoning_router
+from flows.blueprint_flow import run_blueprint_flow
+from tracing.trace_store import trace_store
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -57,6 +59,7 @@ class BlueprintResponse(BaseModel):
     recommended_materials: List[str]
     before_image_url: Optional[str] = None
     after_image_url: Optional[str] = None
+    trace_id: Optional[str] = None
 
 @app.get("/")
 async def root():
@@ -77,20 +80,26 @@ async def get_plantation_data():
 @app.post("/api/v1/generate-blueprint", response_model=BlueprintResponse)
 async def generate_blueprint(request: BlueprintRequest):
     try:
-        # Node 1: Gemini 1.5 Pro (The Reasoner)
-        blueprint = await vertex_service.generate_intervention_blueprint(
-            request.latitude, request.longitude, request.location_context
+        blueprint, trace_id = await run_blueprint_flow(
+            request.latitude,
+            request.longitude,
+            request.location_context or "Toronto urban area",
+            cost_max=2_400_000,
         )
-        
-        # Node 2: Imagen 3 (The Visualizer)
-        image_url = await vertex_service.generate_visual_overlay(
-            request.latitude, request.longitude, blueprint["intervention_strategy"]
-        )
-        
-        blueprint["after_image_url"] = image_url
+        if trace_id:
+            blueprint["trace_id"] = trace_id
         return blueprint
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/traces/{trace_id}")
+async def get_trace(trace_id: str):
+    """Return execution trace for a given run (Audit & Observability)."""
+    normalized = trace_store.get_normalized(trace_id)
+    if normalized is None:
+        raise HTTPException(status_code=404, detail="Trace not found or unavailable")
+    return normalized
 
 @app.post("/api/v1/save-blueprint")
 async def save_blueprint(blueprint: BlueprintResponse):

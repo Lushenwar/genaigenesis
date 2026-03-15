@@ -66,6 +66,8 @@ export interface AnalyzeZoneResult {
     recommended_species: string[];
   };
   generated_image_base64?: string | null;
+  /** Run ID for execution trace (Audit & Observability). */
+  trace_id?: string | null;
 }
 
 export async function analyzeZone(zoneId: string): Promise<AnalyzeZoneResult> {

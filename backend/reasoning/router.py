@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse
 
 from reasoning.schemas import ReasoningGeoJsonResponse
 from reasoning.service import reasoning_service
+from flows.reasoning_flow import run_reasoning_flow
 
 
 router = APIRouter(prefix="/api/v1/reasoning", tags=["reasoning"])
@@ -98,7 +99,7 @@ async def analyze_area(
             image_content = await area_image.read()
             image_mime = area_image.content_type or "image/jpeg"
 
-        result = await reasoning_service.analyze_area_for_tree_planting(
+        result, trace_id = await run_reasoning_flow(
             selected_area_id=selected_area_id,
             geo_payload_bytes=geo_content,
             image_bytes=image_content,
@@ -106,6 +107,8 @@ async def analyze_area(
             user_goal=user_goal,
             max_sites=max_sites,
         )
+        if trace_id:
+            result["trace_id"] = trace_id
         return result
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -136,14 +139,18 @@ async def analyze_zone(zone_id: str, max_sites: int = 5):
     geo_payload_bytes = json.dumps(zone_geojson).encode("utf-8")
 
     try:
-        result = await reasoning_service.analyze_area_for_tree_planting(
+        zone_metrics = zone.get("metrics") or {}
+        result, trace_id = await run_reasoning_flow(
             selected_area_id=zone_id,
             geo_payload_bytes=geo_payload_bytes,
             image_bytes=sat_image,
             image_mime_type=sat_mime,
             user_goal="Maximize tree canopy coverage in the highest-priority urban heat zone. Identify specific planting sites.",
             max_sites=max_sites,
+            zone_metrics=zone_metrics,
         )
+        if trace_id:
+            result["trace_id"] = trace_id
         return result
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

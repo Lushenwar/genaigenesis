@@ -11,7 +11,9 @@ import {
   AlertTriangle,
   Zap,
   ChevronRight,
+  Terminal,
 } from "lucide-react";
+import { ConductrTrace } from "@/components/ConductrTrace";
 
 /** Bounds shape used by MapView and backend zones */
 interface ZoneBounds {
@@ -121,6 +123,8 @@ export default function Home() {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [traceId, setTraceId] = useState<string | null>(null);
+  const [tracePanelOpen, setTracePanelOpen] = useState(false);
 
   useEffect(() => {
     const base = getApiBase();
@@ -148,8 +152,10 @@ export default function Home() {
       if (!res.ok) {
         throw new Error(`Server ${res.status}: ${text.slice(0, 200) || res.statusText}`);
       }
-      const data = JSON.parse(text) as AnalysisResult;
+      const data = JSON.parse(text) as AnalysisResult & { trace_id?: string };
       setAnalysis(data);
+      setTraceId(data.trace_id ?? null);
+      if (data.trace_id) setTracePanelOpen(true);
     } catch (err) {
       console.error("Analysis failed:", err);
       setError(err instanceof Error ? err.message : "Analysis failed. Make sure the backend is running.");
@@ -162,6 +168,7 @@ export default function Home() {
     setSelectedZone(null);
     setAnalysis(null);
     setError(null);
+    setTraceId(null);
   };
 
   const plantingSites: PlantingSite[] =
@@ -180,8 +187,8 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-black text-white p-6 gap-6">
-      <header className="flex justify-between items-center border-b border-zinc-800 pb-4">
+    <main className="flex h-screen flex-col bg-black text-white p-6 gap-4 overflow-hidden">
+      <header className="shrink-0 flex justify-between items-center border-b border-zinc-800 pb-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tighter bg-gradient-to-r from-red-500 to-orange-400 bg-clip-text text-transparent">
             ECO-PULSE
@@ -192,7 +199,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 h-[calc(100vh-160px)]">
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6 overflow-hidden">
         <section className="flex-[2] relative">
           <MapView
             selectedBounds={selectedZone?.bounds ?? null}
@@ -201,7 +208,7 @@ export default function Home() {
           />
         </section>
 
-        <aside className="flex-1 bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 backdrop-blur-sm overflow-y-auto max-h-[calc(100vh-160px)]">
+        <aside className="flex-1 min-h-0 bg-zinc-900/50 border border-zinc-800 rounded-xl p-5 backdrop-blur-sm overflow-y-auto">
           {/* ─── Zone List ─── */}
           {!selectedZone && (
             <>
@@ -426,6 +433,26 @@ export default function Home() {
             </>
           )}
         </aside>
+      </div>
+
+      {/* Audit & Observability: execution trace — always visible at bottom */}
+      <div className="shrink-0 border-t border-zinc-800 bg-zinc-950/80">
+        <button
+          type="button"
+          onClick={() => setTracePanelOpen((v) => !v)}
+          className="flex items-center gap-2 w-full px-4 py-2.5 text-left text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors rounded-t"
+          aria-expanded={tracePanelOpen}
+        >
+          <Terminal className="w-4 h-4 text-primary shrink-0" />
+          <span className="font-medium">
+            Conductr Trace{traceId ? ` (run: ${traceId.slice(0, 8)}…)` : " — click a zone, then open for execution trace"}
+          </span>
+        </button>
+        <ConductrTrace
+          visible={tracePanelOpen}
+          onClose={() => setTracePanelOpen(false)}
+          traceId={traceId}
+        />
       </div>
     </main>
   );
