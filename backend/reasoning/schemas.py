@@ -19,4 +19,8 @@ class ReasoningGeoJsonResponse(BaseModel):
     name: str
     features: List[Dict[str, Any]]
     metadata: Dict[str, Any]
+    generated_image_base64: Optional[str] = Field(
+        default=None,
+        description="Base64-encoded image with trees overlay (when available).",
+    )
 
