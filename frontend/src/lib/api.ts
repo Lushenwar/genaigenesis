@@ -7,7 +7,8 @@ export function getApiBase(): string {
   const fromVite = (import.meta as { env?: Record<string, string> }).env?.VITE_API_URL;
   const fromNext = typeof process !== "undefined" && process.env?.NEXT_PUBLIC_API_URL;
   const url = (fromVite ?? fromNext ?? "")?.trim();
-  return url || "http://localhost:8000";
+  const base = url || "http://localhost:8000";
+  return base.replace(/\/+$/, ""); // no trailing slash so "/api/v1/..." doesn't become "//api/v1/..."
 }
 
 export async function getPlantationData(): Promise<unknown> {
