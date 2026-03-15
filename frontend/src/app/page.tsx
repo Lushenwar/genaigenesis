@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import MapView from "@/components/MapComponent";
+import { MapView } from "@/components/MapView";
+import { getApiBase } from "@/lib/api";
 import {
   Loader2,
   TreePine,
@@ -11,8 +12,6 @@ import {
   Zap,
   ChevronRight,
 } from "lucide-react";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /** Bounds shape used by MapView and backend zones */
 interface ZoneBounds {
@@ -83,7 +82,9 @@ interface AnalysisMetadata {
 interface AnalysisResult {
   type: string;
   features: Array<{
-    properties: Record<string, unknown>;
+    type?: string;
+    geometry?: { type: string; coordinates?: number[] | number[][][] };
+    properties?: Record<string, unknown>;
   }>;
   metadata: AnalysisMetadata;
   generated_image_base64?: string | null;
@@ -122,29 +123,36 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/v1/reasoning/sample-zones`)
+    const base = getApiBase();
+    fetch(`${base}/api/v1/reasoning/sample-zones`)
       .then((res) => res.json())
-      .then((data) => setZones(data))
+      .then((data) => setZones(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Failed to load zones:", err));
   }, []);
 
   const handleZoneSelect = async (zone: Zone) => {
+    const zoneId = zone?.zone_id;
+    if (!zoneId) return;
     setSelectedZone(zone);
     setAnalysis(null);
     setError(null);
     setAnalyzing(true);
 
     try {
+      const base = getApiBase();
       const res = await fetch(
-        `${API_BASE}/api/v1/reasoning/analyze-zone/${zone.zone_id}`,
-        { method: "POST" }
+        `${base}/api/v1/reasoning/analyze-zone/${zoneId}`,
+        { method: "POST", headers: { Accept: "application/json" } }
       );
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const data = await res.json();
+      const text = await res.text();
+      if (!res.ok) {
+        throw new Error(`Server ${res.status}: ${text.slice(0, 200) || res.statusText}`);
+      }
+      const data = JSON.parse(text) as AnalysisResult;
       setAnalysis(data);
     } catch (err) {
       console.error("Analysis failed:", err);
-      setError("Analysis failed. Make sure the backend is running.");
+      setError(err instanceof Error ? err.message : "Analysis failed. Make sure the backend is running.");
     } finally {
       setAnalyzing(false);
     }
@@ -158,13 +166,13 @@ export default function Home() {
 
   const plantingSites: PlantingSite[] =
     analysis?.features
-      .filter((f) => f.properties.feature_kind === "recommended_planting_site")
+      .filter((f) => f.properties?.feature_kind === "recommended_planting_site")
       .map((f) => ({
-        label: (f.properties.label as string) || "Planting site",
-        reason: (f.properties.reason as string) || "",
-        priority: (f.properties.priority as string) || "medium",
+        label: (f.properties?.label as string) || "Planting site",
+        reason: (f.properties?.reason as string) || "",
+        priority: (f.properties?.priority as string) || "medium",
         estimated_tree_count:
-          (f.properties.estimated_tree_count as number) || 1,
+          (f.properties?.estimated_tree_count as number) || 1,
       })) ?? [];
 
   const handleLocationSelect = (_lat: number, _lng: number) => {
@@ -187,8 +195,9 @@ export default function Home() {
       <div className="flex-1 flex flex-col lg:flex-row gap-6 h-[calc(100vh-160px)]">
         <section className="flex-[2] relative">
           <MapView
-            onLocationSelect={handleLocationSelect}
             selectedBounds={selectedZone?.bounds ?? null}
+            recommendationLayer={analysis ?? null}
+            onLocationSelect={handleLocationSelect}
           />
         </section>
 
@@ -211,9 +220,11 @@ export default function Home() {
               <div className="space-y-2">
                 {zones.map((zone, i) => (
                   <button
+                    type="button"
                     key={zone.zone_id}
                     onClick={() => handleZoneSelect(zone)}
-                    className="w-full text-left p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-red-500/50 hover:bg-zinc-800/60 transition-all group"
+                    disabled={analyzing}
+                    className="w-full text-left p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-red-500/50 hover:bg-zinc-800/60 transition-all group disabled:opacity-60 disabled:pointer-events-none"
                   >
                     <div className="flex items-start justify-between">
                       <div className="min-w-0">

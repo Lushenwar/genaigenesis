@@ -1,3 +1,5 @@
+/// <reference types="google.maps" />
+/// <reference types="geojson" />
 import { useState, useCallback, useEffect, useRef } from "react";
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
@@ -17,6 +19,30 @@ const HEAT_COLORS: Record<number, string> = {
 
 const DEFAULT_CENTER = { lat: 45.55, lng: -73.65 };
 const DEFAULT_ZOOM = 11;
+
+/** Bounds shape used by the map and backend zones */
+export interface ZoneBounds {
+  south: number;
+  north: number;
+  west: number;
+  east: number;
+}
+
+/** Recommendation layer: GeoJSON FeatureCollection from analyze-zone API */
+export interface RecommendationLayerGeoJSON {
+  type: string;
+  features: Array<{
+    type?: string;
+    geometry?: { type: string; coordinates?: number[] | number[][][] };
+    properties?: Record<string, unknown>;
+  }>;
+}
+
+export interface MapViewProps {
+  selectedBounds?: ZoneBounds | null;
+  recommendationLayer?: RecommendationLayerGeoJSON | null;
+  onLocationSelect?: (lat: number, lng: number) => void;
+}
 
 function PlantationDataLayer() {
   const map = useMap();
@@ -52,6 +78,105 @@ function PlantationDataLayer() {
       map.data.forEach((f) => map.data.remove(f));
     };
   }, [map]);
+
+  return null;
+}
+
+/** Fits the map to the selected zone bounds when they change. */
+function FitBounds({ selectedBounds }: { selectedBounds?: ZoneBounds | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !selectedBounds) return;
+    const bounds = new google.maps.LatLngBounds(
+      { lat: selectedBounds.south, lng: selectedBounds.west },
+      { lat: selectedBounds.north, lng: selectedBounds.east }
+    );
+    map.fitBounds(bounds, { top: 48, right: 48, bottom: 48, left: 48 });
+  }, [map, selectedBounds]);
+
+  return null;
+}
+
+/** Draws the selected zone polygon and planting site markers from the analysis result. */
+function RecommendationLayer({
+  recommendationLayer,
+}: {
+  recommendationLayer?: RecommendationLayerGeoJSON | null;
+}) {
+  const map = useMap();
+  const overlaysRef = useRef<{ polygons: google.maps.Polygon[]; markers: google.maps.Marker[] }>({
+    polygons: [],
+    markers: [],
+  });
+
+  useEffect(() => {
+    if (!map || !recommendationLayer?.features?.length) {
+      overlaysRef.current.polygons.forEach((p) => p.setMap(null));
+      overlaysRef.current.markers.forEach((m) => m.setMap(null));
+      overlaysRef.current.polygons = [];
+      overlaysRef.current.markers = [];
+      return;
+    }
+
+    const polygons: google.maps.Polygon[] = [];
+    const markers: google.maps.Marker[] = [];
+
+    for (const feature of recommendationLayer.features) {
+      const geom = feature.geometry;
+      const props = feature.properties || {};
+
+      if (geom?.type === "Polygon" && Array.isArray(geom.coordinates?.[0])) {
+        const path = (geom.coordinates[0] as number[][]).map((c) => ({
+          lat: Number(c[1]),
+          lng: Number(c[0]),
+        }));
+        const polygon = new google.maps.Polygon({
+          paths: path,
+          strokeColor: "#ef4444",
+          strokeOpacity: 0.9,
+          strokeWeight: 2,
+          fillColor: "#ef4444",
+          fillOpacity: 0.15,
+          map,
+        });
+        polygons.push(polygon);
+      }
+
+      if (geom?.type === "Point" && Array.isArray(geom.coordinates) && geom.coordinates.length >= 2) {
+        const coords = geom.coordinates as number[];
+        const lat = Number(coords[1]);
+        const lng = Number(coords[0]);
+        const priority = (props.priority as string) || "medium";
+        const fillColor =
+          priority === "high" ? "#22c55e" : priority === "medium" ? "#eab308" : "#71717a";
+        const marker = new google.maps.Marker({
+          position: { lat, lng },
+          map,
+          title: (props.label as string) || "Planting site",
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor,
+            fillOpacity: 1,
+            strokeColor: "#fff",
+            strokeWeight: 2,
+          },
+        });
+        markers.push(marker);
+      }
+    }
+
+    overlaysRef.current.polygons.forEach((p) => p.setMap(null));
+    overlaysRef.current.markers.forEach((m) => m.setMap(null));
+    overlaysRef.current.polygons = polygons;
+    overlaysRef.current.markers = markers;
+
+    return () => {
+      polygons.forEach((p) => p.setMap(null));
+      markers.forEach((m) => m.setMap(null));
+    };
+  }, [map, recommendationLayer]);
 
   return null;
 }
@@ -119,9 +244,10 @@ function MapOverlayUI() {
   );
 }
 
-function MapContent() {
+function MapContent({ selectedBounds, recommendationLayer, onLocationSelect }: MapViewProps) {
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
+  const mapTypeId = recommendationLayer ? "satellite" : "roadmap";
 
   const handleTilesLoaded = useCallback(() => {
     setMapLoading(false);
@@ -148,10 +274,12 @@ function MapContent() {
           defaultZoom={DEFAULT_ZOOM}
           gestureHandling="greedy"
           disableDefaultUI
-          mapTypeId="roadmap"
+          mapTypeId={mapTypeId}
           onTilesLoaded={handleTilesLoaded}
         >
           <PlantationDataLayer />
+          <FitBounds selectedBounds={selectedBounds} />
+          <RecommendationLayer recommendationLayer={recommendationLayer} />
           <MapOverlayUI />
         </Map>
       </APIProvider>
@@ -167,7 +295,10 @@ function MapContent() {
           <div className="text-center max-w-lg text-sm text-amber-900 dark:text-amber-200">
             <p className="font-medium mb-2">Map failed to load</p>
             <p className="text-amber-800 dark:text-amber-300 text-left">{mapError}</p>
-            <p className="mt-3 text-xs">Open DevTools (F12) → Console and look for red errors from Google Maps or your page.</p>
+            <p className="mt-3 text-xs text-amber-700 dark:text-amber-300">
+              If you see <code className="bg-amber-200/50 dark:bg-amber-800/50 px-1 rounded">ERR_BLOCKED_BY_CLIENT</code> in the console, an ad blocker or extension is blocking Google Maps. Whitelist <code className="bg-amber-200/50 dark:bg-amber-800/50 px-1 rounded">maps.googleapis.com</code> or disable the blocker for this site.
+            </p>
+            <p className="mt-2 text-xs">Otherwise open DevTools (F12) → Console for more errors.</p>
           </div>
         </div>
       )}
@@ -175,7 +306,11 @@ function MapContent() {
   );
 }
 
-export function MapView() {
+export function MapView({
+  selectedBounds = null,
+  recommendationLayer = null,
+  onLocationSelect,
+}: MapViewProps) {
   if (!API_KEY) {
     return (
       <div className="relative h-full w-full min-h-[400px] flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-md p-6">
@@ -188,5 +323,11 @@ export function MapView() {
       </div>
     );
   }
-  return <MapContent />;
+  return (
+    <MapContent
+      selectedBounds={selectedBounds}
+      recommendationLayer={recommendationLayer}
+      onLocationSelect={onLocationSelect}
+    />
+  );
 }
