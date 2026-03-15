@@ -15,6 +15,9 @@ frontend/build/
 frontend/node_modules/
 
 # Python / Backend
+.venv/
+venv/
+env/
 backend/__pycache__/
 backend/*.py[cod]
 backend/*$py.class

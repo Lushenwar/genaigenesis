@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -16,11 +17,27 @@ from reasoning.router import router as reasoning_router
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
+# CORS: allow localhost (Next.js 3000, Vite/verdant-mind-tool 8080), Lovable, and custom CORS_ORIGINS from env
+_DEFAULT_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "https://lovable.app",
+]
+_CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "")
+if _CORS_ORIGINS_ENV.strip():
+    _EXTRA = [o.strip() for o in _CORS_ORIGINS_ENV.split(",") if o.strip()]
+    CORS_ORIGINS = _DEFAULT_ORIGINS + _EXTRA
+else:
+    CORS_ORIGINS = _DEFAULT_ORIGINS
+
 app = FastAPI(title="ECO-PULSE API", description="AI-powered Urban Heat Mitigation Planner")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
