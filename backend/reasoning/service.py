@@ -12,11 +12,16 @@ GEMINI_API_MODEL = os.getenv("GEMINI_API_MODEL", "gemini-2.5-flash")
 COST_BENEFIT_GUIDANCE = """
 This area is in Montreal, Canada. You are providing estimates for the city (municipal context).
 
-Produce approximate figures the city can use for planning:
-- estimated_cost_usd: approximate total one-time implementation cost in USD (tree purchase, planting, stakes, initial watering, labour). Base it on Montreal conditions and your candidate_planting_sites and estimated_tree_count. Use typical municipal street-tree cost ranges (e.g. on the order of hundreds to a few thousand per tree depending on site difficulty and species).
-- estimated_annual_benefit_usd: approximate total annual financial benefit in USD (cooling, air quality, stormwater, health, property value). Again base it on the number and placement of trees you recommend.
+Cost (implementation, one-time):
+- Cost per tree: $1,500–$1,700 USD (tree purchase, planting, stakes, watering, labour).
+- Recommend how many trees the zone/image needs across candidate_planting_sites (each site has estimated_tree_count). Do not recommend more than 50 trees total for the zone.
+- Total implementation cost = sum of (estimated_tree_count × cost per tree). The average total should be between $20,000 and $60,000 USD depending on how many trees the zone needs (roughly 12–40 trees). With up to 50 trees, the maximum total is about $60,000–$85,000; keep typical zone totals in the $20,000–$60,000 range.
+- estimated_cost_usd: this total, as a whole number.
 
-These will be shown to the user as "Approximate implementation cost" and "Approximate annual benefit"; always output whole numbers.
+Benefit (annual):
+- estimated_annual_benefit_usd: approximate total annual financial benefit in USD (cooling, air quality, stormwater, health, property value) based on the number and placement of trees you recommend. Output a whole number.
+
+These will be shown to the user as "Approximate implementation cost" and "Approximate annual benefit".
 """
 
 
