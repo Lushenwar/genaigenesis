@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap } from "lucide-react";
+import { Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap, DollarSign } from "lucide-react";
 import { getTop10Zones, type Top10Zone } from "@/lib/api";
 import type { AnalyzeZoneResult } from "@/lib/api";
 
@@ -47,6 +47,21 @@ function ZoneDetailView({
           <div className="px-2 py-1.5 rounded border bg-muted/30 text-[11px] text-muted-foreground">
             {meta.rationale}
           </div>
+          {(typeof meta.estimated_cost_usd === "number" || typeof meta.estimated_annual_benefit_usd === "number") && (
+            <div>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
+                <DollarSign className="w-3 h-3" /> Cost & benefit (approximate)
+              </p>
+              <div className="space-y-1 text-[11px] text-foreground/90">
+                {typeof meta.estimated_cost_usd === "number" && (
+                  <p>Approximate implementation cost: ~${meta.estimated_cost_usd.toLocaleString()} USD</p>
+                )}
+                {typeof meta.estimated_annual_benefit_usd === "number" && (
+                  <p>Approximate annual benefit: ~${meta.estimated_annual_benefit_usd.toLocaleString()} USD</p>
+                )}
+              </div>
+            </div>
+          )}
           {meta.recommended_species?.length > 0 && (
             <div>
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">

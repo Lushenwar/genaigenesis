@@ -64,6 +64,10 @@ export interface AnalyzeZoneResult {
     constraints: string[];
     quick_wins: string[];
     recommended_species: string[];
+    /** Approximate one-time implementation cost (USD); shown to user as approximation. */
+    estimated_cost_usd?: number | null;
+    /** Approximate annual financial benefit (USD); shown to user as approximation. */
+    estimated_annual_benefit_usd?: number | null;
   };
   generated_image_base64?: string | null;
 }

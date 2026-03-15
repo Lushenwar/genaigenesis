@@ -8,6 +8,17 @@ from typing import Any, Dict, List, Optional, Tuple
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_MODEL = os.getenv("GEMINI_API_MODEL", "gemini-2.5-flash")
 
+# Guidance for the LLM on approximate cost and benefit (Montreal, city context).
+COST_BENEFIT_GUIDANCE = """
+This area is in Montreal, Canada. You are providing estimates for the city (municipal context).
+
+Produce approximate figures the city can use for planning:
+- estimated_cost_usd: approximate total one-time implementation cost in USD (tree purchase, planting, stakes, initial watering, labour). Base it on Montreal conditions and your candidate_planting_sites and estimated_tree_count. Use typical municipal street-tree cost ranges (e.g. on the order of hundreds to a few thousand per tree depending on site difficulty and species).
+- estimated_annual_benefit_usd: approximate total annual financial benefit in USD (cooling, air quality, stormwater, health, property value). Again base it on the number and placement of trees you recommend.
+
+These will be shown to the user as "Approximate implementation cost" and "Approximate annual benefit"; always output whole numbers.
+"""
+
 
 class ReasoningService:
     def __init__(self) -> None:
@@ -352,6 +363,8 @@ class ReasoningService:
                 "constraints": parsed.get("constraints", []),
                 "quick_wins": parsed.get("quick_wins", []),
                 "recommended_species": parsed.get("recommended_species", []),
+                "estimated_cost_usd": parsed.get("estimated_cost_usd"),
+                "estimated_annual_benefit_usd": parsed.get("estimated_annual_benefit_usd"),
             },
         }
 
@@ -393,6 +406,8 @@ Your goal: choose the best places to plant trees in the selected area.
 
 {input_context}
 
+{COST_BENEFIT_GUIDANCE}
+
 Return STRICT JSON with this schema:
 {{
   "selected_area_id": "string",
@@ -410,6 +425,8 @@ Return STRICT JSON with this schema:
   ],
   "constraints": ["constraint"],
   "quick_wins": ["immediate action"],
+  "estimated_cost_usd": number,
+  "estimated_annual_benefit_usd": number,
   "raw_selected_area": {{}}
 }}
 
@@ -420,6 +437,7 @@ Rules:
 - Limit candidate_planting_sites to at most {max_sites}.
 - Prefer species suitable for hot urban microclimates.
 - Keep rationale practical and short.
+- Provide estimated_cost_usd and estimated_annual_benefit_usd as approximate whole numbers for Montreal / city use (see cost/benefit guidance above).
 - Output ONLY valid JSON.
 
 Selected area id: {resolved_id}
@@ -459,6 +477,8 @@ Geo sample (first {len(sample_items)} items): {json.dumps(sample_items)}
                 ],
                 "constraints": ["Needs field validation for underground utilities."],
                 "quick_wins": ["Start with curb-side pilot planting and monitor survival."],
+                "estimated_cost_usd": 6000,
+                "estimated_annual_benefit_usd": 600,
                 "raw_selected_area": selected_area,
             }
 
