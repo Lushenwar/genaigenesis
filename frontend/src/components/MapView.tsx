@@ -3,7 +3,8 @@ import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { APIProvider, Map, useMap } from "@vis.gl/react-google-maps";
 import { getPlantationData } from "@/lib/api";
 
-const API_KEY = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string) || "";
+// Must be VITE_GOOGLE_MAPS_API_KEY in .env — Vite only exposes VITE_* variables
+const API_KEY = (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string)?.trim() || "";
 
 /** Heat-map colors by Priorite_I (1=highest priority). */
 const HEAT_COLORS: Record<number, string> = {
@@ -120,13 +121,29 @@ function MapOverlayUI() {
 
 function MapContent() {
   const [mapLoading, setMapLoading] = useState(true);
-  const handleTilesLoaded = useCallback(() => setMapLoading(false), []);
+  const [mapError, setMapError] = useState<string | null>(null);
+
+  const handleTilesLoaded = useCallback(() => {
+    setMapLoading(false);
+    setMapError(null);
+  }, []);
+
+  // If map tiles never load (e.g. invalid API key or API not enabled), show error after 12s
+  useEffect(() => {
+    if (!mapLoading) return;
+    const t = setTimeout(() => {
+      setMapError(
+        "Map did not load. Check: (1) VITE_GOOGLE_MAPS_API_KEY in frontend/.env and restart Vite, (2) Maps JavaScript API enabled for your key in Google Cloud Console, (3) Browser Console (F12) for errors."
+      );
+    }, 12000);
+    return () => clearTimeout(t);
+  }, [mapLoading]);
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-secondary">
+    <div className="relative h-full w-full min-h-[400px] overflow-hidden bg-secondary">
       <APIProvider apiKey={API_KEY}>
         <Map
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: "100%", height: "100%", minHeight: "400px" }}
           defaultCenter={DEFAULT_CENTER}
           defaultZoom={DEFAULT_ZOOM}
           gestureHandling="greedy"
@@ -140,8 +157,18 @@ function MapContent() {
       </APIProvider>
 
       {mapLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/90 z-10 p-4">
           <p className="text-sm text-muted-foreground animate-pulse">Loading map…</p>
+          <p className="text-xs text-muted-foreground/80">API key is set. If this never finishes, check the browser Console (F12).</p>
+        </div>
+      )}
+      {mapError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-700 z-20 p-6">
+          <div className="text-center max-w-lg text-sm text-amber-900 dark:text-amber-200">
+            <p className="font-medium mb-2">Map failed to load</p>
+            <p className="text-amber-800 dark:text-amber-300 text-left">{mapError}</p>
+            <p className="mt-3 text-xs">Open DevTools (F12) → Console and look for red errors from Google Maps or your page.</p>
+          </div>
         </div>
       )}
     </div>
@@ -151,8 +178,13 @@ function MapContent() {
 export function MapView() {
   if (!API_KEY) {
     return (
-      <div className="relative h-full w-full flex items-center justify-center bg-secondary text-muted-foreground text-sm p-4">
-        Set VITE_GOOGLE_MAPS_API_KEY in .env to show the map. Backend: ensure VITE_API_URL points to http://localhost:8000.
+      <div className="relative h-full w-full min-h-[400px] flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-md p-6">
+        <div className="text-center max-w-md text-sm text-zinc-700 dark:text-zinc-300">
+          <p className="font-medium mb-1">Map needs a Google Maps API key</p>
+          <p className="text-zinc-600 dark:text-zinc-400">In <code className="bg-zinc-300 dark:bg-zinc-700 px-1 rounded">frontend/.env</code> add:</p>
+          <pre className="mt-2 p-2 bg-zinc-300 dark:bg-zinc-700 rounded text-left text-xs overflow-x-auto">VITE_GOOGLE_MAPS_API_KEY=your_key_here</pre>
+          <p className="mt-2 text-xs text-zinc-500">Restart the dev server (npx vite) after changing .env. Backend: VITE_API_URL (default http://localhost:8000)</p>
+        </div>
       </div>
     );
   }

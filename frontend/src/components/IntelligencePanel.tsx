@@ -16,7 +16,7 @@ export function IntelligencePanel() {
   const [activeTab, setActiveTab] = useState("Visualization");
 
   return (
-    <div className="h-full flex flex-col border-l border-border bg-background">
+    <div className="h-full min-h-0 flex flex-col border-l border-border bg-background">
       {/* Tabs */}
       <div className="flex border-b border-border">
         {tabs.map(tab => (
@@ -55,7 +55,7 @@ export function IntelligencePanel() {
       </div>
 
       {/* Cards */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3">
         {interventions.map(intervention => (
           <InterventionCard key={intervention.refId} {...intervention} />
         ))}

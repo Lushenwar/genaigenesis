@@ -23,10 +23,12 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 grid grid-cols-[200px_1fr_380px] overflow-hidden">
+      {/* Main content: min-h-0 lets the grid cell shrink; [&>*]:min-h-0 constrains columns so side panels can scroll */}
+      <div className="flex-1 min-h-0 grid grid-cols-[200px_1fr_380px] overflow-hidden [&>*]:min-h-0">
         <LayerPanel />
-        <MapView />
+        <div className="min-h-0 flex flex-col overflow-hidden">
+          <MapView />
+        </div>
         <IntelligencePanel />
       </div>
     </div>
