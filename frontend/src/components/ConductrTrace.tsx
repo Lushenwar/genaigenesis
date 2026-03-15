@@ -38,9 +38,11 @@ interface ConductrTraceProps {
   visible: boolean;
   onClose: () => void;
   traceId?: string | null;
+  /** When true, only render content (no inner header bar); parent provides the single bar. */
+  hideHeader?: boolean;
 }
 
-export function ConductrTrace({ visible, onClose, traceId }: ConductrTraceProps) {
+export function ConductrTrace({ visible, onClose, traceId, hideHeader = false }: ConductrTraceProps) {
   const [trace, setTrace] = useState<TraceData | null>(null);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -93,23 +95,8 @@ export function ConductrTrace({ visible, onClose, traceId }: ConductrTraceProps)
   const steps = useLiveTrace ? trace!.steps : [];
   const subtitle = trace?.flow_name ?? "Execution trace";
 
-  return (
-    <div className="border-t border-border bg-secondary/50">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-        <div className="flex items-center gap-2">
-          <Terminal className="w-3.5 h-3.5 text-primary" strokeWidth={1.5} />
-          <span className="text-[11px] font-medium text-muted-foreground">
-            {subtitle}
-          </span>
-          {traceId && !useLiveTrace && !loading && !fetchError && (
-            <span className="text-[10px] text-muted-foreground/80">(static)</span>
-          )}
-        </div>
-        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-          <X className="w-3.5 h-3.5" strokeWidth={1.5} />
-        </button>
-      </div>
-      <div className="overflow-y-auto max-h-[220px] p-3 space-y-1">
+  const content = (
+    <div className="overflow-y-auto max-h-[220px] p-3 space-y-1">
         {loading && (
           <div className="text-[11px] text-muted-foreground py-2">Loading trace…</div>
         )}
@@ -158,7 +145,30 @@ export function ConductrTrace({ visible, onClose, traceId }: ConductrTraceProps)
             <span className="text-foreground/80">{entry.msg}</span>
           </div>
         ))}
+    </div>
+  );
+
+  if (hideHeader) {
+    return <div className="border-t border-border bg-secondary/50">{content}</div>;
+  }
+
+  return (
+    <div className="border-t border-border bg-secondary/50">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+        <div className="flex items-center gap-2">
+          <Terminal className="w-3.5 h-3.5 text-primary" strokeWidth={1.5} />
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {subtitle}
+          </span>
+          {traceId && !useLiveTrace && !loading && !fetchError && (
+            <span className="text-[10px] text-muted-foreground/80">(static)</span>
+          )}
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <X className="w-3.5 h-3.5" strokeWidth={1.5} />
+        </button>
       </div>
+      {content}
     </div>
   );
 }

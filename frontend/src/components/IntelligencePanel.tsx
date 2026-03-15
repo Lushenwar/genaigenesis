@@ -1,9 +1,85 @@
-import { useState, useEffect } from "react";
-import { ChevronRight, FileJson, Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap, Terminal } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronRight, ChevronDown, ChevronUp, FileJson, Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap, Terminal, Check } from "lucide-react";
 import { InterventionCard } from "./InterventionCard";
 import { ConductrTrace } from "./ConductrTrace";
 import { getTop10Zones, type Top10Zone } from "@/lib/api";
 import type { AnalyzeZoneResult } from "@/lib/api";
+
+/** Mock pipeline steps shown as "live log" while zone analysis runs (frontend-only, no backend fetch). */
+const MOCK_PIPELINE_STEPS = [
+  "Input data (spatial/geo + image)",
+  "Risk/InVEST model",
+  "Financial threshold check",
+  "Gemini tree-planting analysis",
+  "Visualization",
+];
+
+/** Interval between revealing each step (ms). */
+const LIVE_STEP_INTERVAL_MS = 1400;
+/** How long a step shows "running" before "done" (ms). */
+const LIVE_STEP_RUNNING_MS = 700;
+
+function useLiveTraceSteps(analyzing: boolean) {
+  const [steps, setSteps] = useState<{ id: number; label: string; status: "running" | "done" }[]>([]);
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    if (!analyzing) {
+      timeoutsRef.current.forEach((t) => clearTimeout(t));
+      timeoutsRef.current = [];
+      setSteps((prev) => (prev.length ? prev.map((s) => ({ ...s, status: "done" as const })) : []));
+      return;
+    }
+
+    setSteps([]);
+    const schedule = (fn: () => void, delay: number) => {
+      const t = setTimeout(fn, delay);
+      timeoutsRef.current.push(t);
+    };
+
+    MOCK_PIPELINE_STEPS.forEach((label, index) => {
+      const runAt = index * LIVE_STEP_INTERVAL_MS;
+      const doneAt = runAt + LIVE_STEP_RUNNING_MS;
+
+      schedule(() => {
+        setSteps((prev) => [...prev, { id: index, label, status: "running" }]);
+      }, runAt);
+
+      schedule(() => {
+        setSteps((prev) =>
+          prev.map((s) => (s.id === index ? { ...s, status: "done" as const } : s))
+        );
+      }, doneAt);
+    });
+
+    return () => {
+      timeoutsRef.current.forEach((t) => clearTimeout(t));
+      timeoutsRef.current = [];
+    };
+  }, [analyzing]);
+
+  return steps;
+}
+
+function LiveTraceLog({ steps }: { steps: { id: number; label: string; status: "running" | "done" }[] }) {
+  if (steps.length === 0) return null;
+  return (
+    <div className="space-y-1.5 font-mono text-[11px]">
+      {steps.map((step) => (
+        <div key={step.id} className="flex items-center gap-2 text-foreground/90">
+          {step.status === "done" ? (
+            <Check className="w-3.5 h-3.5 shrink-0 text-primary" strokeWidth={2} />
+          ) : (
+            <Loader2 className="w-3.5 h-3.5 shrink-0 text-primary animate-spin" strokeWidth={1.5} />
+          )}
+          <span className={step.status === "done" ? "text-muted-foreground" : "text-foreground"}>
+            {step.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // Tree canopy only — ROI 6–15% (30-yr), Shade 0.70–0.85, ETI 0.60–0.75, Albedo 0.05–0.10, cost $6k–$15k
 const interventions = [
@@ -29,10 +105,9 @@ function ZoneDetailView({
   analysis: AnalyzeZoneResult | null;
   traceId: string | null;
 }) {
-  const [traceOpen, setTraceOpen] = useState(!!traceId);
-  useEffect(() => {
-    if (traceId) setTraceOpen(true);
-  }, [traceId]);
+  const [traceOpen, setTraceOpen] = useState(false);
+  const liveSteps = useLiveTraceSteps(analyzing);
+
   const sites = analysis?.features?.filter((f) => f.properties?.feature_kind === "recommended_planting_site") ?? [];
   const meta = analysis?.metadata;
 
@@ -50,9 +125,12 @@ function ZoneDetailView({
         <h3 className="text-sm font-semibold text-foreground truncate">{zoneLabel}</h3>
 
         {analyzing && (
-          <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground text-xs">
-            <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
-            <span>Analyzing zone…</span>
+          <div className="mt-4 p-4 rounded-lg border border-border bg-muted/20">
+            <p className="text-[11px] text-muted-foreground mb-3 flex items-center gap-2">
+              <Terminal className="w-3.5 h-3.5 text-primary" strokeWidth={1.5} />
+              Railtracks pipeline
+            </p>
+            <LiveTraceLog steps={liveSteps} />
           </div>
         )}
         {error && (
@@ -112,25 +190,33 @@ function ZoneDetailView({
         )}
       </div>
 
-      {/* Conductr Trace — under zone analysis */}
-      <div className="shrink-0 border-t border-border bg-muted/30">
-        <button
-          type="button"
-          onClick={() => setTraceOpen((v) => !v)}
-          className="flex items-center gap-2 w-full px-3 py-2 text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-          aria-expanded={traceOpen}
-        >
-          <Terminal className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span className="font-medium">
-            Conductr Trace{traceId ? ` (run: ${traceId.slice(0, 8)}…)` : " — execution trace"}
-          </span>
-        </button>
-        <ConductrTrace
-          visible={traceOpen}
-          onClose={() => setTraceOpen(false)}
-          traceId={traceId}
-        />
-      </div>
+      {/* Conductr Trace — only after analysis is loaded; single bar with chevron */}
+      {!analyzing && (
+        <div className="shrink-0 border-t border-border bg-muted/30">
+          <button
+            type="button"
+            onClick={() => setTraceOpen((v) => !v)}
+            className="flex items-center gap-2 w-full px-3 py-2 text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            aria-expanded={traceOpen}
+          >
+            <Terminal className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="font-medium flex-1">
+              Conductr Trace{traceId ? ` (run: ${traceId.slice(0, 8)}…)` : ""}
+            </span>
+            {traceOpen ? (
+              <ChevronUp className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+            )}
+          </button>
+          <ConductrTrace
+            visible={traceOpen}
+            onClose={() => setTraceOpen(false)}
+            traceId={traceId}
+            hideHeader
+          />
+        </div>
+      )}
     </div>
   );
 }
