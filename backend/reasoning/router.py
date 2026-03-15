@@ -50,6 +50,38 @@ def _fetch_satellite_image(bounds: dict) -> Optional[bytes]:
         return None
 
 
+def _zone_to_geojson(zone: dict) -> dict:
+    """Build a GeoJSON FeatureCollection for the zone so satellite image and GeoJSON are one unit."""
+    bounds = zone["bounds"]
+    south, north = bounds["south"], bounds["north"]
+    west, east = bounds["west"], bounds["east"]
+    # GeoJSON: [lng, lat], closed polygon
+    coordinates = [
+        [west, south],
+        [east, south],
+        [east, north],
+        [west, north],
+        [west, south],
+    ]
+    feature = {
+        "type": "Feature",
+        "properties": {
+            "zone_id": zone.get("zone_id"),
+            "ml_risk_cluster": zone.get("ml_risk_cluster"),
+            "metrics": zone.get("metrics", {}),
+        },
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [coordinates],
+        },
+    }
+    return {
+        "type": "FeatureCollection",
+        "name": "selected_zone",
+        "features": [feature],
+    }
+
+
 @router.post("/analyze-area", response_model=ReasoningGeoJsonResponse)
 async def analyze_area(
     selected_area_id: str = Form(...),
@@ -84,9 +116,9 @@ async def analyze_area(
 @router.post("/analyze-zone/{zone_id}", response_model=ReasoningGeoJsonResponse)
 async def analyze_zone(zone_id: str, max_sites: int = 5):
     """
-    All-in-one endpoint: loads the zone from top_10_ml_zones.json,
-    fetches a satellite image for it, then sends both to Gemini for
-    tree-planting analysis.
+    All-in-one endpoint: loads the zone, fetches its satellite image,
+    builds GeoJSON for that same area, and sends both together to Gemini
+    (satellite image + GeoJSON as one unit) for tree-planting analysis.
     """
     if not SAMPLE_ZONE_FILE.exists():
         raise HTTPException(status_code=404, detail="Zones file not found.")
@@ -99,10 +131,14 @@ async def analyze_zone(zone_id: str, max_sites: int = 5):
     sat_image = _fetch_satellite_image(zone["bounds"])
     sat_mime = "image/png" if sat_image else None
 
+    # Build GeoJSON for this zone only — same area as the satellite image (one unit).
+    zone_geojson = _zone_to_geojson(zone)
+    geo_payload_bytes = json.dumps(zone_geojson).encode("utf-8")
+
     try:
         result = await reasoning_service.analyze_area_for_tree_planting(
             selected_area_id=zone_id,
-            geo_payload_bytes=json.dumps(zones).encode("utf-8"),
+            geo_payload_bytes=geo_payload_bytes,
             image_bytes=sat_image,
             image_mime_type=sat_mime,
             user_goal="Maximize tree canopy coverage in the highest-priority urban heat zone. Identify specific planting sites.",

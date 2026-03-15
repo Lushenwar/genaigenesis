@@ -204,6 +204,46 @@ class ReasoningService:
                     }
         return None
 
+    def _generate_trees_image_base64(
+        self,
+        rationale: str,
+        satellite_image_bytes: Optional[bytes] = None,
+    ) -> Optional[str]:
+        """
+        Optionally generate an image with trees for the frontend.
+        Returns base64-encoded PNG or None if generation is not available.
+        Can be wired to Vertex Imagen or another image-generation API.
+        """
+        try:
+            from services.vertex_ai import vertex_service
+            if not vertex_service.vertex_enabled or not vertex_service.imagen_model:
+                return None
+            prompt = (
+                "Photorealistic aerial view of an urban neighborhood with added street trees, "
+                "green canopy, and planted areas. Same perspective as a satellite image. "
+                f"Context: {rationale[:300]}."
+            )
+            result = vertex_service.imagen_model.generate_images(
+                prompt=prompt,
+                number_of_images=1,
+                aspect_ratio="1:1",
+            )
+            if result is None:
+                return None
+            images = getattr(result, "images", None) or getattr(result, "generated_images", [])
+            if not images:
+                return None
+            img = images[0]
+            import io
+            pil = getattr(img, "_pil_image", None) or getattr(img, "pil_image", None)
+            if pil is not None:
+                buf = io.BytesIO()
+                pil.save(buf, format="PNG")
+                return base64.b64encode(buf.getvalue()).decode("utf-8")
+        except Exception:
+            pass
+        return None
+
     def _bounds_to_polygon_geometry(self, bounds: Dict[str, float]) -> Dict[str, Any]:
         south = bounds["south"]
         north = bounds["north"]
@@ -339,9 +379,19 @@ class ReasoningService:
             else "No image is provided. Base recommendations only on geo data and explicitly mention this limitation in constraints."
         )
 
+        input_context = (
+            "The attached image is the satellite view of this exact area. "
+            "The GeoJSON below describes the same area (geometry and properties). "
+            "Treat the image and GeoJSON as one unit for your analysis."
+            if has_image
+            else "The GeoJSON below describes the selected area."
+        )
+
         prompt = f"""
 You are an urban forestry planning analyst.
 Your goal: choose the best places to plant trees in the selected area.
+
+{input_context}
 
 Return STRICT JSON with this schema:
 {{
@@ -415,9 +465,18 @@ Geo sample (first {len(sample_items)} items): {json.dumps(sample_items)}
         if "selected_area_id" not in parsed:
             parsed["selected_area_id"] = resolved_id
 
-        return self._build_recommendation_geojson(
+        result = self._build_recommendation_geojson(
             parsed=parsed, selected_area=selected_area, resolved_id=resolved_id
         )
+
+        # Optional: generate "image with trees" for the frontend (when Vertex Imagen is available).
+        generated_b64 = self._generate_trees_image_base64(
+            rationale=parsed.get("rationale", ""),
+            satellite_image_bytes=image_bytes,
+        )
+        result["generated_image_base64"] = generated_b64
+
+        return result
 
 
 reasoning_service = ReasoningService()
