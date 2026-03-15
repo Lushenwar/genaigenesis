@@ -58,7 +58,7 @@ const Index = () => {
         <div className="min-h-0 flex flex-col overflow-hidden">
           <MapView
             selectedBounds={selectedZone?.bounds ?? null}
-            recommendationLayer={analysis ?? null}
+            recommendationLayer={null}
           />
         </div>
         <IntelligencePanel
