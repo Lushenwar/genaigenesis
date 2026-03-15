@@ -1,62 +1,42 @@
-"use client";
-
-import React, { useState } from 'react';
+import { useState, useRef, useCallback } from "react";
 
 interface ImageSliderProps {
-  beforeUrl: string;
-  afterUrl: string;
+  before: string;
+  after: string;
 }
 
-export default function ImageSlider({ beforeUrl, afterUrl }: ImageSliderProps) {
-  const [sliderPosition, setSliderPosition] = useState(50);
+export function ImageSlider({ before, after }: ImageSliderProps) {
+  const [position, setPosition] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
 
-  const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    const position = ((x - rect.left) / rect.width) * 100;
-    setSliderPosition(Math.min(Math.max(position, 0), 100));
-  };
+  const handleMove = useCallback((clientX: number) => {
+    if (!containerRef.current || !dragging.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    setPosition((x / rect.width) * 100);
+  }, []);
 
   return (
-    <div 
-      className="relative w-full h-64 rounded-lg overflow-hidden cursor-ew-resize select-none border border-zinc-800"
-      onMouseMove={handleMouseMove}
-      onTouchMove={handleMouseMove}
+    <div
+      ref={containerRef}
+      className="relative w-full aspect-video rounded-sm overflow-hidden cursor-col-resize select-none border border-border"
+      onMouseDown={() => { dragging.current = true; }}
+      onMouseUp={() => { dragging.current = false; }}
+      onMouseLeave={() => { dragging.current = false; }}
+      onMouseMove={(e) => handleMove(e.clientX)}
     >
-      {/* After Image (Background) */}
-      <img 
-        src={afterUrl} 
-        alt="After transformation"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      {/* Before Image (Overlay) */}
-      <div 
-        className="absolute inset-0 w-full h-full overflow-hidden transition-all duration-75"
-        style={{ width: `${sliderPosition}%` }}
-      >
-        <img 
-          src={beforeUrl} 
-          alt="Before transformation"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ width: `${100 / (sliderPosition / 100)}%` }} // Prevent stretching
-        />
+      <img src={after} alt="After" className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-0 overflow-hidden" style={{ width: `${position}%` }}>
+        <img src={before} alt="Before" className="absolute inset-0 w-full h-full object-cover" style={{ minWidth: `${100 / (position / 100)}%` }} />
       </div>
-
-      {/* Slider Line */}
-      <div 
-        className="absolute top-0 bottom-0 w-1 bg-white shadow-xl flex items-center justify-center transition-all duration-75"
-        style={{ left: `${sliderPosition}%` }}
-      >
-        <div className="w-4 h-4 bg-white rounded-full shadow-lg border-2 border-zinc-400"></div>
+      <div className="absolute top-0 bottom-0 w-px bg-primary" style={{ left: `${position}%` }}>
+        <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+          <span className="text-[8px] text-primary-foreground">⟷</span>
+        </div>
       </div>
-
-      <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 backdrop-blur-md rounded text-xs font-bold text-white uppercase tracking-widest pointer-events-none">
-        Before
-      </div>
-      <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/50 backdrop-blur-md rounded text-xs font-bold text-white uppercase tracking-widest pointer-events-none">
-        After (AI)
-      </div>
+      <span className="absolute top-1.5 left-1.5 text-[10px] font-medium bg-background/80 px-1.5 py-0.5 rounded-sm text-muted-foreground">Before</span>
+      <span className="absolute top-1.5 right-1.5 text-[10px] font-medium bg-background/80 px-1.5 py-0.5 rounded-sm text-primary">After</span>
     </div>
   );
 }
