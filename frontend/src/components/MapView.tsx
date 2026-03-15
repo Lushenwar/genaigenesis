@@ -112,6 +112,48 @@ function FitBounds({ selectedBounds }: { selectedBounds?: ZoneBounds | null }) {
   return null;
 }
 
+/** Zone outline color: teal that reads well on satellite and suggests nature/vegetation. */
+const ZONE_STROKE = "#0d9488";
+const ZONE_FILL_OPACITY = 0.12;
+
+/** Draws the selected zone as a single rectangle from bounds (no circles or analysis overlays). */
+function SelectedZoneLayer({ selectedBounds }: { selectedBounds?: ZoneBounds | null }) {
+  const map = useMap();
+  const polygonRef = useRef<google.maps.Polygon | null>(null);
+
+  useEffect(() => {
+    if (!map) return;
+    if (polygonRef.current) {
+      polygonRef.current.setMap(null);
+      polygonRef.current = null;
+    }
+    if (!selectedBounds) return;
+
+    const path = [
+      { lat: selectedBounds.south, lng: selectedBounds.west },
+      { lat: selectedBounds.north, lng: selectedBounds.west },
+      { lat: selectedBounds.north, lng: selectedBounds.east },
+      { lat: selectedBounds.south, lng: selectedBounds.east },
+    ];
+    const polygon = new google.maps.Polygon({
+      paths: path,
+      strokeColor: ZONE_STROKE,
+      strokeOpacity: 0.95,
+      strokeWeight: 2.5,
+      fillColor: ZONE_STROKE,
+      fillOpacity: ZONE_FILL_OPACITY,
+      map,
+    });
+    polygonRef.current = polygon;
+    return () => {
+      polygon.setMap(null);
+      polygonRef.current = null;
+    };
+  }, [map, selectedBounds]);
+
+  return null;
+}
+
 /** Draws the selected zone polygon and planting site markers from the analysis result. */
 function RecommendationLayer({
   recommendationLayer,
@@ -261,7 +303,7 @@ function MapOverlayUI() {
 function MapContent({ selectedBounds, recommendationLayer, onLocationSelect }: MapViewProps) {
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
-  const mapTypeId = recommendationLayer ? "satellite" : "roadmap";
+  const mapTypeId = selectedBounds ? "satellite" : "roadmap";
 
   const handleTilesLoaded = useCallback(() => {
     setMapLoading(false);
@@ -293,6 +335,7 @@ function MapContent({ selectedBounds, recommendationLayer, onLocationSelect }: M
         >
           <PlantationDataLayer />
           <FitBounds selectedBounds={selectedBounds} />
+          <SelectedZoneLayer selectedBounds={selectedBounds} />
           <RecommendationLayer recommendationLayer={recommendationLayer} />
           <MapOverlayUI />
         </Map>
