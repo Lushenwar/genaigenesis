@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap, DollarSign } from "lucide-react";
-import { getTop10Zones, type Top10Zone } from "@/lib/api";
-import type { AnalyzeZoneResult } from "@/lib/api";
+import { Thermometer, Loader2, AlertCircle, ArrowLeft, TreePine, MapPin, Zap, DollarSign, Sparkles } from "lucide-react";
+import { getTop10Zones, type Top10Zone, type AnalyzeZoneResult, type BlueprintResponse } from "@/lib/api";
+import { InterventionCard } from "./InterventionCard";
 
 function ZoneDetailView({
   zoneLabel,
@@ -212,8 +212,8 @@ function Top10TabContent({
               <span
                 className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded ${
                   cluster === "Critical"
-                    ? "bg-destructive/15 text-destructive"
-                    : "bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                      ? "bg-destructive/15 text-destructive"
+                      : "bg-amber-500/15 text-amber-700 dark:text-amber-400"
                 }`}
               >
                 {cluster}
@@ -251,6 +251,9 @@ export interface IntelligencePanelProps {
   analysis?: AnalyzeZoneResult | null;
   analyzing?: boolean;
   analysisError?: string | null;
+  blueprintData?: BlueprintResponse | null;
+  blueprintLoading?: boolean;
+  blueprintError?: string | null;
   onZoneSelect?: (zone: Top10Zone) => void;
   onZoneBack?: () => void;
 }
@@ -260,22 +263,120 @@ export function IntelligencePanel({
   analysis = null,
   analyzing = false,
   analysisError = null,
+  blueprintData = null,
+  blueprintLoading = false,
+  blueprintError = null,
   onZoneSelect = () => {},
   onZoneBack = () => {},
 }: IntelligencePanelProps = {}) {
+  const [activeTab, setActiveTab] = useState<"recommendations" | "top10">("recommendations");
+
+  // Auto-switch to recommendations when blueprint is loading or available
+  useEffect(() => {
+    if (blueprintLoading || blueprintData) {
+      setActiveTab("recommendations");
+    }
+  }, [blueprintLoading, blueprintData]);
+
   return (
     <div className="h-full min-h-0 flex flex-col border-l border-border bg-background">
-      <div className="px-4 py-2.5 border-b border-border">
-        <span className="text-sm font-medium text-foreground">Highest-vulnerability zones</span>
+      <div className="flex border-b border-border">
+        <button
+          onClick={() => setActiveTab("recommendations")}
+          className={`flex-1 flex items-center justify-center py-2.5 text-xs font-medium transition-colors border-b-2 ${
+            activeTab === "recommendations" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Recommendations
+        </button>
+        <button
+          onClick={() => setActiveTab("top10")}
+          className={`flex-1 flex items-center justify-center py-2.5 text-xs font-medium transition-colors border-b-2 ${
+            activeTab === "top10" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Top 10
+        </button>
       </div>
-      <Top10TabContent
-        onZoneSelect={onZoneSelect}
-        selectedZone={selectedZone}
-        analysis={analysis}
-        analyzing={analyzing}
-        analysisError={analysisError}
-        onBack={onZoneBack}
-      />
+
+      {activeTab === "recommendations" && (
+        <div className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col space-y-4">
+          <div className="flex items-center justify-between border-b pb-2 mb-2">
+            <h2 className="text-sm font-semibold flex items-center gap-1.5">
+              Intervention Blueprint
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-primary flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> AI Blueprint
+              </span>
+            </div>
+          </div>
+
+          {blueprintLoading && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground text-xs text-center px-4">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" strokeWidth={1.5} />
+              <div className="space-y-1">
+                <p className="font-medium text-foreground">Running multi-step Gemini pipeline...</p>
+                <p>Generating expert context, species, and visual interventions.</p>
+              </div>
+            </div>
+          )}
+
+          {blueprintError && (
+             <div className="p-4 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm flex flex-col gap-2">
+               <div className="flex items-center gap-2 font-medium">
+                 <AlertCircle className="w-4 h-4" />
+                 Generation Failed
+               </div>
+               <p className="text-xs">{blueprintError}</p>
+             </div>
+          )}
+
+          {!blueprintLoading && !blueprintData && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground text-xs text-center px-6">
+              <div className="w-12 h-12 rounded-full bg-secondary/50 flex items-center justify-center mb-1">
+                <Sparkles className="w-6 h-6 text-primary/40" />
+              </div>
+              <p>Select a zone and click <b>Run Blueprint</b> on the map to generate AI urban planning recommendations.</p>
+            </div>
+          )}
+
+          {blueprintData && (
+            <div className="space-y-4 animate-in fade-in duration-500">
+              <div className="bg-primary/5 border border-primary/10 rounded-lg p-3">
+                <p className="text-[11px] leading-relaxed italic text-foreground/90">
+                  {blueprintData.context || blueprintData.intervention_strategy}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {blueprintData.planting_sites?.map((site, idx) => (
+                  <InterventionCard 
+                    key={idx}
+                    intervention={{
+                      ...site,
+                      metrics: blueprintData.metrics,
+                      before_image: blueprintData.before_image_url,
+                      after_image: blueprintData.after_image_url
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "top10" && (
+        <Top10TabContent
+          onZoneSelect={onZoneSelect}
+          selectedZone={selectedZone}
+          analysis={analysis}
+          analyzing={analyzing}
+          analysisError={analysisError}
+          onBack={onZoneBack}
+        />
+      )}
     </div>
   );
 }

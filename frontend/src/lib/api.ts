@@ -84,3 +84,53 @@ export async function analyzeZone(zoneId: string): Promise<AnalyzeZoneResult> {
   }
   return JSON.parse(text) as AnalyzeZoneResult;
 }
+
+export interface Intervention {
+  label: string;
+  reason: string;
+}
+
+export interface BlueprintResponse {
+  context?: string;
+  intervention_strategy?: string;
+  recommended_species?: string[];
+  recommended_materials?: string[];
+  planting_sites?: Intervention[];
+  quick_wins?: string[];
+  metrics: {
+    cooling_capacity: number;
+    shade_index: number;
+    evapotranspiration_rate: number;
+    albedo_change: number;
+    estimated_cost: string;
+    estimated_annual_roi: string;
+    model_confidence: string;
+  };
+  before_image_url?: string;
+  after_image_url?: string;
+}
+
+export async function generateBlueprint(zoneId: string, bounds: Top10Zone["bounds"], metrics: Top10Zone["metrics"]): Promise<BlueprintResponse> {
+  const base = getApiBase();
+  const res = await fetch(`${base}/api/v1/generate-blueprint`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      zone_id: zoneId,
+      bbox: {
+        min_lat: bounds.south,
+        max_lat: bounds.north,
+        min_lng: bounds.west,
+        max_lng: bounds.east
+      },
+      risk_metrics: metrics
+    }),
+  });
+  
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Blueprint generation failed");
+  }
+  
+  return res.json();
+}

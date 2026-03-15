@@ -47,19 +47,19 @@ export interface MapViewProps {
   selectedBounds?: ZoneBounds | null;
   recommendationLayer?: RecommendationLayerGeoJSON | null;
   onLocationSelect?: (lat: number, lng: number) => void;
+  onRunBlueprint?: () => void;
+  activeLayers?: Record<string, boolean>;
 }
 
-function PlantationDataLayer() {
+function PlantationDataLayer({ visible }: { visible: boolean }) {
   const map = useMap();
   const loaded = useRef(false);
 
   useEffect(() => {
-    if (!map || loaded.current) return;
-    loaded.current = true;
-
     getPlantationData()
       .then((geojson) => {
         if (!geojson || typeof geojson !== "object") return;
+        loaded.current = true;
         const data = geojson as GeoJsonFeatureCollection;
         if (!data.features?.length) return;
 
@@ -83,6 +83,22 @@ function PlantationDataLayer() {
       map.data.forEach((f) => map.data.remove(f));
     };
   }, [map]);
+
+  useEffect(() => {
+    if (!map) return;
+    map.data.setStyle((feature) => {
+      const priority = (feature.getProperty("Priorite_I") as number) ?? 3;
+      const fillColor = HEAT_COLORS[priority] ?? "#666";
+      return {
+        fillColor,
+        fillOpacity: visible ? 0.55 : 0,
+        strokeColor: "#fff",
+        strokeOpacity: visible ? 0.85 : 0,
+        strokeWeight: 1.2,
+        clickable: visible,
+      };
+    });
+  }, [map, visible]);
 
   return null;
 }
@@ -242,7 +258,7 @@ function RecommendationLayer({
   return null;
 }
 
-function MapOverlayUI() {
+function MapOverlayUI({ onRunBlueprint }: { onRunBlueprint?: () => void }) {
   const map = useMap();
   const [center, setCenter] = useState(DEFAULT_CENTER);
 
@@ -286,7 +302,10 @@ function MapOverlayUI() {
         ))}
       </div>
       <div className="absolute bottom-3 left-3 z-10">
-        <button className="bg-primary text-primary-foreground px-4 py-2 rounded-sm text-xs font-medium shadow-sm hover:opacity-90 transition-opacity">
+        <button 
+          onClick={onRunBlueprint}
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-sm text-xs font-medium shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+        >
           Run Blueprint
         </button>
       </div>
@@ -308,7 +327,7 @@ function MapOverlayUI() {
   );
 }
 
-function MapContent({ selectedBounds, recommendationLayer, onLocationSelect }: MapViewProps) {
+function MapContent({ selectedBounds, recommendationLayer, onLocationSelect, onRunBlueprint, activeLayers }: MapViewProps) {
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
   const mapTypeId = selectedBounds ? "satellite" : "roadmap";
@@ -341,11 +360,11 @@ function MapContent({ selectedBounds, recommendationLayer, onLocationSelect }: M
           mapTypeId={mapTypeId}
           onTilesLoaded={handleTilesLoaded}
         >
-          <PlantationDataLayer />
+          <PlantationDataLayer visible={!!activeLayers?.vegetation} />
           <FitBounds selectedBounds={selectedBounds} />
           <SelectedZoneLayer selectedBounds={selectedBounds} />
           <RecommendationLayer recommendationLayer={recommendationLayer} />
-          <MapOverlayUI />
+          <MapOverlayUI onRunBlueprint={onRunBlueprint} />
         </Map>
       </APIProvider>
 
@@ -374,6 +393,8 @@ export function MapView({
   selectedBounds = null,
   recommendationLayer = null,
   onLocationSelect,
+  onRunBlueprint,
+  activeLayers,
 }: MapViewProps) {
   if (!API_KEY) {
     return (
@@ -392,6 +413,8 @@ export function MapView({
       selectedBounds={selectedBounds}
       recommendationLayer={recommendationLayer}
       onLocationSelect={onLocationSelect}
+      onRunBlueprint={onRunBlueprint}
+      activeLayers={activeLayers}
     />
   );
 }
