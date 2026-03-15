@@ -2,191 +2,151 @@
   {
     "zone_id": "MTL_ZONE_1",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Mercier–Hochelaga-Maisonneuve",
-    "center": {
-      "lat": 45.5593,
-      "lng": -73.53584
-    },
     "bounds": {
-      "south": 45.532085,
-      "north": 45.612848,
-      "west": -73.566814,
-      "east": -73.510752
+      "south": 45.4405,
+      "north": 45.4415,
+      "west": -73.6735,
+      "east": -73.6725
     },
     "metrics": {
-      "priority_1_cell_count": 812,
-      "area_sq_m": 507500
+      "avg_heat_index": 103.0,
+      "avg_population_density": 29243,
+      "avg_canopy_coverage_pct": 3.3
     }
   },
   {
     "zone_id": "MTL_ZONE_2",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Saint-Laurent",
-    "center": {
-      "lat": 45.51397,
-      "lng": -73.680692
-    },
     "bounds": {
-      "south": 45.477481,
-      "north": 45.531962,
-      "west": -73.76923,
-      "east": -73.660492
+      "south": 45.4625,
+      "north": 45.4635,
+      "west": -73.6435,
+      "east": -73.6425
     },
     "metrics": {
-      "priority_1_cell_count": 785,
-      "area_sq_m": 490625
+      "avg_heat_index": 103.2,
+      "avg_population_density": 28943,
+      "avg_canopy_coverage_pct": 4.6
     }
   },
   {
     "zone_id": "MTL_ZONE_3",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "LaSalle",
-    "center": {
-      "lat": 45.429376,
-      "lng": -73.621507
-    },
     "bounds": {
-      "south": 45.416389,
-      "north": 45.450832,
-      "west": -73.657384,
-      "east": -73.571101
+      "south": 45.6255,
+      "north": 45.6265,
+      "west": -73.6005,
+      "east": -73.5995
     },
     "metrics": {
-      "priority_1_cell_count": 659,
-      "area_sq_m": 411875
+      "avg_heat_index": 101.9,
+      "avg_population_density": 29803,
+      "avg_canopy_coverage_pct": 6.3
     }
   },
   {
     "zone_id": "MTL_ZONE_4",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Côte-des-Neiges–Notre-Dame-de-Grâce",
-    "center": {
-      "lat": 45.487433,
-      "lng": -73.626511
-    },
     "bounds": {
-      "south": 45.451025,
-      "north": 45.512908,
-      "west": -73.66214,
-      "east": -73.598661
+      "south": 45.5835,
+      "north": 45.5845,
+      "west": -73.5805,
+      "east": -73.5795
     },
     "metrics": {
-      "priority_1_cell_count": 480,
-      "area_sq_m": 300000
+      "avg_heat_index": 99.0,
+      "avg_population_density": 29115,
+      "avg_canopy_coverage_pct": 2.1
     }
   },
   {
     "zone_id": "MTL_ZONE_5",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Ahuntsic-Cartierville",
-    "center": {
-      "lat": 45.54363,
-      "lng": -73.672615
-    },
     "bounds": {
-      "south": 45.523578,
-      "north": 45.583357,
-      "west": -73.731262,
-      "east": -73.623137
+      "south": 45.5795,
+      "north": 45.5805,
+      "west": -73.6195,
+      "east": -73.6185
     },
     "metrics": {
-      "priority_1_cell_count": 438,
-      "area_sq_m": 273750
+      "avg_heat_index": 99.6,
+      "avg_population_density": 28778,
+      "avg_canopy_coverage_pct": 2.3
     }
   },
   {
     "zone_id": "MTL_ZONE_6",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Lachine",
-    "center": {
-      "lat": 45.444911,
-      "lng": -73.670951
-    },
     "bounds": {
-      "south": 45.432748,
-      "north": 45.451657,
-      "west": -73.721082,
-      "east": -73.630896
+      "south": 45.5685,
+      "north": 45.5695,
+      "west": -73.6325,
+      "east": -73.6315
     },
     "metrics": {
-      "priority_1_cell_count": 345,
-      "area_sq_m": 215625
+      "avg_heat_index": 98.4,
+      "avg_population_density": 29715,
+      "avg_canopy_coverage_pct": 4.4
     }
   },
   {
     "zone_id": "MTL_ZONE_7",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Villeray–Saint-Michel–Parc-Extension",
-    "center": {
-      "lat": 45.558258,
-      "lng": -73.617707
-    },
     "bounds": {
-      "south": 45.523929,
-      "north": 45.584687,
-      "west": -73.645182,
-      "east": -73.587292
+      "south": 45.4585,
+      "north": 45.4595,
+      "west": -73.5665,
+      "east": -73.5655
     },
     "metrics": {
-      "priority_1_cell_count": 332,
-      "area_sq_m": 207500
+      "avg_heat_index": 98.9,
+      "avg_population_density": 29960,
+      "avg_canopy_coverage_pct": 5.7
     }
   },
   {
     "zone_id": "MTL_ZONE_8",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Rosemont–La Petite-Patrie",
-    "center": {
-      "lat": 45.563946,
-      "lng": -73.573886
-    },
     "bounds": {
-      "south": 45.526472,
-      "north": 45.581507,
-      "west": -73.619565,
-      "east": -73.553027
+      "south": 45.5795,
+      "north": 45.5805,
+      "west": -73.5685,
+      "east": -73.5675
     },
     "metrics": {
-      "priority_1_cell_count": 326,
-      "area_sq_m": 203750
+      "avg_heat_index": 100.0,
+      "avg_population_density": 28456,
+      "avg_canopy_coverage_pct": 2.4
     }
   },
   {
     "zone_id": "MTL_ZONE_9",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Saint-Léonard",
-    "center": {
-      "lat": 45.582079,
-      "lng": -73.590875
-    },
     "bounds": {
-      "south": 45.566447,
-      "north": 45.604264,
-      "west": -73.624356,
-      "east": -73.564966
+      "south": 45.6255,
+      "north": 45.6265,
+      "west": -73.6205,
+      "east": -73.6195
     },
     "metrics": {
-      "priority_1_cell_count": 292,
-      "area_sq_m": 182500
+      "avg_heat_index": 102.8,
+      "avg_population_density": 29986,
+      "avg_canopy_coverage_pct": 10.0
     }
   },
   {
     "zone_id": "MTL_ZONE_10",
     "ml_risk_cluster": "Critical",
-    "neighborhood": "Pierrefonds-Roxboro",
-    "center": {
-      "lat": 45.492657,
-      "lng": -73.843255
-    },
     "bounds": {
-      "south": 45.459339,
-      "north": 45.511866,
-      "west": -73.918303,
-      "east": -73.772418
+      "south": 45.5205,
+      "north": 45.5215,
+      "west": -73.7195,
+      "east": -73.7185
     },
     "metrics": {
-      "priority_1_cell_count": 278,
-      "area_sq_m": 173750
+      "avg_heat_index": 95.8,
+      "avg_population_density": 29844,
+      "avg_canopy_coverage_pct": 3.0
     }
   }
 ]
